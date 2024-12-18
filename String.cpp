@@ -1,6 +1,10 @@
 #include"String.hpp"
 
-String::String(std::string target) { std::strcpy(content, &target[0]); }
+class String;
+
+String::String(const std::string& target) { 
+  std::strcpy(content, &target[0]); 
+}
 bool String::operator>(const String &B)const {
   int result = std::strcmp((*this).content, B.content);
   return result > 0;

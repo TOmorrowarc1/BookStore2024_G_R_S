@@ -12,7 +12,7 @@ private:
 
 public:
   String() = default;
-  String(std::string);
+  String(const std::string&);
   ~String() = default;
   bool operator>(const String &)const;
   bool operator==(const String &)const;
@@ -22,6 +22,7 @@ public:
   bool operator<=(const String &)const;
   void operator=(const String &);
   void operator=(const std::string&);
+  
 };
 
 #endif
