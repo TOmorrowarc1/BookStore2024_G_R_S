@@ -43,3 +43,16 @@ void String::operator=(const std::string& B){
   }
   return;
 }
+
+std::ostream& operator<<(std::ostream& output,const String& object){
+  for(int i=0;object.content[i]!=0;++i){
+    output<<object.content[i];
+  }
+  return output;
+}
+std::istream& operator>>(std::istream& input, String& object){
+  std::string temp;
+  input>>temp;
+  object = temp;
+  return input;
+}
