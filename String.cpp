@@ -27,9 +27,15 @@ bool String::operator<=(const String &B) const{
 }
 void String::operator=(const String &B) { 
   std::strcpy(content, B.content); 
+  for(int i= strlen(content);i<65;++i){
+    content[i]=0;
+  }
   return;
 }
 void String::operator=(const std::string& B){
   std::strcpy(content, &B[0]); 
+  for(int i= strlen(content);i<65;++i){
+    content[i]=0;
+  }
   return;
 }

@@ -2,6 +2,7 @@
 #define S_T_O_R_A_G_E_H_P_P
 
 #include"String.hpp"
+#include"String.cpp"
 #include <algorithm>
 #include <fstream>
 #include <iostream>
@@ -64,7 +65,7 @@ private:
     //在已知Atom属于该头所引领的体时，列举，不改变对应的体以及自身（不裂块）。
     bool list(const std::string &, const Atom &, const Atom &, const Memory &);
     //在已知Atom属于该头所引领的体时，寻找Key对应的Atom。
-    Tv search(const std::string&, const Atom&, const Memory&);
+    Atom search(const std::string&, const Atom&, const Memory&);
     friend class Atom;
     friend class Memory;
   };
@@ -265,13 +266,13 @@ bool Memory<Tk, Tv>::Head::list(const std::string &file_name, const Atom &front,
 }
 
 template <typename Tk, typename Tv>
-Tv Memory<Tk, Tv>::Head::search(const std::string& file_name, const Atom& Key_min, const Memory& environment){
+typename Memory<Tk, Tv>::Atom Memory<Tk, Tv>::Head::search(const std::string& file_name, const Atom& Key_min, const Memory& environment){
   Atom *temp = new Atom[number + 1];
   std::fstream file;
   file.open(file_name, std::fstream::in | std::fstream::out);
   if (!file) {
     std::cerr << "Cannot open the file.\n";
-    return 0;
+    return *temp;
   }
   int start = begin * environment.size_of_atom;
   file.seekg(start);
@@ -285,7 +286,6 @@ Tv Memory<Tk, Tv>::Head::search(const std::string& file_name, const Atom& Key_mi
   delete[] temp;
   return target_catch;
 }
-
 
 template <typename Tk, typename Tv>
 Memory<Tk, Tv>::Memory(const std::string &file1, const std::string &file2,
@@ -329,7 +329,7 @@ template <typename Tk, typename Tv> void Memory<Tk, Tv>::initialise() {
 template <typename Tk, typename Tv>
 typename Memory<Tk, Tv>::Atom Memory<Tk, Tv>::create(const Tk &Key_,const Tv &Value_) {
   Memory<Tk, Tv>::Atom target(Key_, Value_);
-  return std::move(target);
+  return target;
 }
 //传递参数：储存元素。
 //寻找元素对应的头的位置。
@@ -509,19 +509,19 @@ Tv Memory<Tk, Tv>::search(const Tk&Key_,const Tv& min){
   file.open(head_file, std::fstream::in | std::fstream::out);
   if (!file) {
     std::cerr << "Cannot open the file.\n";
-    return;
+    return blank.Value_;
   }
   file.seekg(0);
   file.read(reinterpret_cast<char *>(temp), num_of_heads * size_of_head);
   file.close();
   int start = find(key_min, temp);
-  target_catcher = temp[start].search(body_file,key_min);
+  target_catcher = temp[start].search(body_file,key_min,*this);
   if(target_catcher==blank){
     start+=1;
-    target_catcher = temp[start].search(body_file,key_min);
+    target_catcher = temp[start].search(body_file,key_min,*this);
   }
   delete[] temp;
-  return target_catcher;
+  return target_catcher.Value_;
 }
 
 
