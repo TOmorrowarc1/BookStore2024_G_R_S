@@ -61,8 +61,10 @@ private:
     void insert(const std::string &, const Atom &, const Memory &);
     //在已知Atom属于该头所引领的体时，删除，改变对应的体以及自身（不裂块）。
     void erase(const std::string &, const Atom &, const Memory &);
-    //在已知Atom属于该头所引领的体时，列举，改变对应的体以及自身（不裂块）。
+    //在已知Atom属于该头所引领的体时，列举，不改变对应的体以及自身（不裂块）。
     bool list(const std::string &, const Atom &, const Atom &, const Memory &);
+    //在已知Atom属于该头所引领的体时，寻找Key对应的Atom。
+    Tv search(const std::string&, const Atom&, const Memory&);
     friend class Atom;
     friend class Memory;
   };
@@ -79,8 +81,10 @@ public:
   void insert(const Atom &);
   //减少（含并块）
   void erase(const Atom &);
-  //传递参数：Key_。输出Value_。
+  //传递参数：Key_。输出Value_到控制台。
   void list(const Tk &Key_, const Tv &min, const Tv &max);
+  //寻找对应Key的value(只应用于单Key单Value)，并直接返回value。
+  Tv search(const Tk&Key_, const Tv &min);
   friend class Head;
 };
 
@@ -261,6 +265,29 @@ bool Memory<Tk, Tv>::Head::list(const std::string &file_name, const Atom &front,
 }
 
 template <typename Tk, typename Tv>
+Tv Memory<Tk, Tv>::Head::search(const std::string& file_name, const Atom& Key_min, const Memory& environment){
+  Atom *temp = new Atom[number + 1];
+  std::fstream file;
+  file.open(file_name, std::fstream::in | std::fstream::out);
+  if (!file) {
+    std::cerr << "Cannot open the file.\n";
+    return 0;
+  }
+  int start = begin * environment.size_of_atom;
+  file.seekg(start);
+  file.read(reinterpret_cast<char *>(temp), number * environment.size_of_atom);
+  Atom *target = std::lower_bound(temp, temp + number, Key_min);
+  Atom target_catch;
+  if(target->Key_==Key_min.Key_){
+    target_catch=(*target);
+  }
+  file.close();
+  delete[] temp;
+  return target_catch;
+}
+
+
+template <typename Tk, typename Tv>
 Memory<Tk, Tv>::Memory(const std::string &file1, const std::string &file2,
                        int size_of_body1)
     : size_of_body(size_of_body1) {
@@ -300,8 +327,7 @@ template <typename Tk, typename Tv> void Memory<Tk, Tv>::initialise() {
 }
 //根据传入参数构造Atom.
 template <typename Tk, typename Tv>
-typename Memory<Tk, Tv>::Atom Memory<Tk, Tv>::create(const Tk &Key_,
-                                                       const Tv &Value_) {
+typename Memory<Tk, Tv>::Atom Memory<Tk, Tv>::create(const Tk &Key_,const Tv &Value_) {
   Memory<Tk, Tv>::Atom target(Key_, Value_);
   return std::move(target);
 }
@@ -473,6 +499,29 @@ void Memory<Tk, Tv>::list(const Tk &Key_, const Tv &min, const Tv &max) {
   std::cout << "\r\n";
   delete[] temp;
   return;
+}
+
+template <typename Tk, typename Tv>
+Tv Memory<Tk, Tv>::search(const Tk&Key_,const Tv& min){
+  Atom key_min(Key_,min);
+  Atom target_catcher,blank;
+  Head *temp = new Head[num_of_heads + 1];
+  file.open(head_file, std::fstream::in | std::fstream::out);
+  if (!file) {
+    std::cerr << "Cannot open the file.\n";
+    return;
+  }
+  file.seekg(0);
+  file.read(reinterpret_cast<char *>(temp), num_of_heads * size_of_head);
+  file.close();
+  int start = find(key_min, temp);
+  target_catcher = temp[start].search(body_file,key_min);
+  if(target_catcher==blank){
+    start+=1;
+    target_catcher = temp[start].search(body_file,key_min);
+  }
+  delete[] temp;
+  return target_catcher;
 }
 
 
