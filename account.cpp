@@ -25,114 +25,148 @@ register [UserID] [Password] [Username]
 先访问，返回值若相同再压栈并改变全局变量。
 */
 
-#include"account.hpp"
+#include "account.hpp"
 
-Account_system::Account_info::Account_info(const String& user_ID,const String& user_name,const String& password,int user_rank){
-    User_ID_=user_ID;
-    User_name_=user_name;
-    Password_=password;
-    User_rank_=user_rank;
+Account_system::Account_info::Account_info(const String &user_ID,
+                                           const String &user_name,
+                                           const String &password,
+                                           int user_rank) {
+  User_ID_ = user_ID;
+  User_name_ = user_name;
+  Password_ = password;
+  User_rank_ = user_rank;
 }
 
-void Account_system::Account_info::operator=(const Account_info& target){
-    User_ID_=target.User_ID_;
-    User_name_=target.User_name_;
-    Password_=target.Password_;
-    User_rank_=target.User_rank_;
-    return;
+void Account_system::Account_info::operator=(const Account_info &target) {
+  User_ID_ = target.User_ID_;
+  User_name_ = target.User_name_;
+  Password_ = target.Password_;
+  User_rank_ = target.User_rank_;
+  return;
 }
 //作为单Key-Value元素，不可能在文件中出现两个相同的User_ID_。
-bool Account_system::Account_info::operator==(const Account_info& B)const{
-    return User_ID_==B.User_ID_;
+bool Account_system::Account_info::operator==(const Account_info &B) const {
+  return User_ID_ == B.User_ID_;
 }
-bool Account_system::Account_info::operator!=(const Account_info& B)const{
-    return User_ID_!=B.User_ID_;
+bool Account_system::Account_info::operator!=(const Account_info &B) const {
+  return User_ID_ != B.User_ID_;
 }
-bool Account_system::Account_info::operator>(const Account_info& B)const{
-    return User_ID_>B.User_ID_;
+bool Account_system::Account_info::operator>(const Account_info &B) const {
+  return User_ID_ > B.User_ID_;
 }
-bool Account_system::Account_info::operator<(const Account_info& B)const{
-    return User_ID_<B.User_ID_;
+bool Account_system::Account_info::operator<(const Account_info &B) const {
+  return User_ID_ < B.User_ID_;
 }
-bool Account_system::Account_info::operator>=(const Account_info& B)const{
-    return User_ID_>=B.User_ID_;
+bool Account_system::Account_info::operator>=(const Account_info &B) const {
+  return User_ID_ >= B.User_ID_;
 }
-bool Account_system::Account_info::operator<=(const Account_info& B)const{
-    return User_ID_<=B.User_ID_;
+bool Account_system::Account_info::operator<=(const Account_info &B) const {
+  return User_ID_ <= B.User_ID_;
 }
-
 
 //下面是函数的正式实现：
 /*{0} register [UserID] [Password] [Username]
 注册信息如指令格式所示，权限等级为 {1} 的帐户。
 如果 [UserID] 与已注册帐户重复则操作失败。*/
-void Account_system::Register(){
-    String User_ID,Password,User_name;
-    std::cin>>User_ID>>Password>>User_name;
-    Account_info target(User_ID,User_name,Password,1);
-    Account_info temp=Account_storage.search(User_ID,target);
-    if(temp!=target){
-        Account_storage.insert(Account_storage.create(User_ID,target));
-    }
-    return;
+void Account_system::Register() {
+  String User_ID, Password, User_name;
+  std::cin >> User_ID >> Password >> User_name;
+  Account_info target(User_ID, User_name, Password, 1);
+  Account_info temp = Account_storage.search(User_ID, target);
+  if (temp != target) {
+    Account_storage.insert(Account_storage.create(User_ID, target));
+  }
+  return;
 }
 /*{3} useradd [UserID] [Password] [Privilege] [Username]
 创建信息如指令格式所示的帐户。
 如果待创建帐户的权限等级大于等于当前帐户权限等级则操作失败；
 如果 [UserID] 与已注册帐户重复则操作失败*/
-void Account_system::User_add(){
-    String User_ID,User_name,Password,blank;
-    int Privilege=0;
-    std::cin>>User_ID>>User_name>>Privilege>>Password;
-    if(rank_now>Privilege&&rank_now>=3){
-        Account_info target(User_ID,User_name,Password,Privilege);
-        Account_info temp=Account_storage.search(User_ID,target);
-        if(temp!=target){
-            Account_storage.insert(Account_storage.create(User_ID,target));
-        }
+void Account_system::User_add() {
+  String User_ID, User_name, Password, blank;
+  int Privilege = 0;
+  std::cin >> User_ID >> User_name >> Privilege >> Password;
+  if (rank_now > Privilege && rank_now >= 3) {
+    Account_info target(User_ID, User_name, Password, Privilege);
+    Account_info temp = Account_storage.search(User_ID, target);
+    if (temp != target) {
+      Account_storage.insert(Account_storage.create(User_ID, target));
     }
-    return;
+  }
+  return;
 }
 /*{1} passwd [UserID] ([CurrentPassword])? [NewPassword]
 修改指定帐户的密码。
 如果该帐户不存在则操作失败；
 如果密码错误则操作失败；
 如果当前帐户权限等级为 {7} 则可以省略 [CurrentPassword]。*/
-void Account_system::Password_change(){
-    String User_ID,CurrentPassword,NewPassword,blank;
-    std::cin>>User_ID;
-    if(rank_now==7){
-        std::cin>>CurrentPassword;
-        std::cin>>NewPassword;
-    }
-    else{
-        std::cin>>CurrentPassword;
-        std::cin>>NewPassword;
-    }
-    Account_info target(User_ID,blank,CurrentPassword,0);
-    Account_info temp=Account_storage.search(User_ID,target);
-    if(temp.Password_!=CurrentPassword){
-        return;
-    }
-    else{
-        temp.Password_=NewPassword;
-        Account_storage.insert(Account_storage.create(User_ID,temp));
-        return;
-    }
+//尚未完成：{7}的特殊处理。
+void Account_system::Password_change() {
+  String User_ID, CurrentPassword, NewPassword, blank;
+  std::cin >> User_ID;
+  if (rank_now == 7) {
+    std::cin >> CurrentPassword;
+    std::cin >> NewPassword;
+  } else {
+    std::cin >> CurrentPassword;
+    std::cin >> NewPassword;
+  }
+  Account_info target(User_ID, blank, CurrentPassword, 0);
+  Account_info temp = Account_storage.search(User_ID, target);
+  if (temp.Password_ != CurrentPassword) {
+    return;
+  } else {
+    temp.Password_ = NewPassword;
+    Account_storage.insert(Account_storage.create(User_ID, temp));
+    return;
+  }
 }
 /*{7} delete [UserID]
 删除指定帐户。
 如果待删除帐户不存在则操作失败；
 如果待删除帐户已登录则操作失败。*/
-void Account_system::Delete_user(){
-    String user_id,blank;
-    std::cin>>user_id;
-    if(rank_now==7){
-        Account_info target(user_id,blank,blank,0);
-        Account_info temp=Account_storage.search(user_id,target);
-        if(temp==target){
-            Account_storage.erase(Account_storage.create(user_id,temp));
-        }
+void Account_system::Delete_user() {
+  String user_id, blank;
+  std::cin >> user_id;
+  if (rank_now == 7) {
+    Account_info target(user_id, blank, blank, 0);
+    Account_info temp = Account_storage.search(user_id, target);
+    if (temp == target) {
+      Account_storage.erase(Account_storage.create(user_id, temp));
     }
-    return;
+  }
+  return;
+}
+
+/*{0} su [UserID] ([Password])?
+使登录帐户变为已登录状态，当前帐户变为该帐户。
+如果该帐户不存在则操作失败；
+如果密码错误则操作失败；
+如果当前帐户权限等级高于登录帐户则可以省略密码。*/
+void Account_system::sign_in() {
+  String user_id, password, blank;
+  std::cin >> user_id;
+  Account_info target(user_id, blank, blank, 0);
+  Account_info temp = Account_storage.search(user_id, target);
+  if (temp.User_rank_ < rank_now) {
+    Account_record.push(temp);
+    rank_now = temp.User_rank_;
+  } else {
+    std::cin >> password;
+    if (temp.Password_ == password) {
+      Account_record.push(temp);
+      rank_now = temp.User_rank_;
+    }
+  }
+  return;
+}
+
+/*{1} logout
+撤销最后一次成功执行的 su 指令效果。
+如无已登录帐户则操作失败。*/
+void Account_system::log_out() {
+  if (!Account_record.empty()) {
+    Account_record.pop();
+    rank_now = Account_record.top().User_rank_;
+  }
 }
