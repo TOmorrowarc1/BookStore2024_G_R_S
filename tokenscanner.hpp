@@ -23,6 +23,8 @@ public:
   std::string next_token();
   //令pointer返回上一个字符串起始。
   void move_back();
+  //返回储存字符串的数量。
+  int count_string();
 };
 
 #endif

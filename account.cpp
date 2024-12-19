@@ -27,9 +27,9 @@ su [UserID] ([Password])?
 
 #include "account.hpp"
 
-Account_system::Account_info::Account_info(const String &user_ID,
-                                           const String &user_name,
-                                           const String &password,
+Account_system::Account_info::Account_info(const MyString &user_ID,
+                                           const MyString &user_name,
+                                           const MyString &password,
                                            int user_rank) {
   User_ID_ = user_ID;
   User_name_ = user_name;
@@ -64,13 +64,25 @@ bool Account_system::Account_info::operator<=(const Account_info &B) const {
   return User_ID_ <= B.User_ID_;
 }
 
+
+
 //下面是函数的正式实现：
 /*{0} register [UserID] [Password] [Username]
 注册信息如指令格式所示，权限等级为 {1} 的帐户。
 如果 [UserID] 与已注册帐户重复则操作失败。*/
 void Account_system::Register(Token_scanner& order) {
-  String User_ID, Password, User_name;
-  std::cin >> User_ID >> Password >> User_name;
+  if(order.count_string()!=3){
+    std::cout<<"寄了\n";
+    return;
+  }
+  std::string token;
+  MyString User_ID, User_name, Password;
+  token=order.next_token();
+  User_ID=token;
+  token=order.next_token();
+  Password=token;
+  token=order.next_token();
+  User_name=token;
   Account_info target(User_ID, User_name, Password, 1);
   Account_info temp = Account_storage.search(User_ID, target);
   if (temp != target) {
@@ -78,14 +90,27 @@ void Account_system::Register(Token_scanner& order) {
   }
   return;
 }
+
 /*{3} useradd [UserID] [Password] [Privilege] [Username]
 创建信息如指令格式所示的帐户。
 如果待创建帐户的权限等级大于等于当前帐户权限等级则操作失败；
 如果 [UserID] 与已注册帐户重复则操作失败*/
 void Account_system::User_add(Token_scanner& order) {
-  String User_ID, User_name, Password, blank;
+  if(order.count_string()!=4){
+    std::cout<<"寄了\n";
+    return;
+  }
+  std::string token;
+  MyString User_ID, User_name, Password, blank;
   int Privilege = 0;
-  std::cin >> User_ID >> User_name >> Privilege >> Password;
+  token=order.next_token();
+  User_ID=token;
+  token=order.next_token();
+  Password=token;
+  token=order.next_token();
+  Privilege=token[0]-'0';
+  token=order.next_token();
+  User_name=token;
   if (rank_now > Privilege && rank_now >= 3) {
     Account_info target(User_ID, User_name, Password, Privilege);
     Account_info temp = Account_storage.search(User_ID, target);
@@ -95,6 +120,7 @@ void Account_system::User_add(Token_scanner& order) {
   }
   return;
 }
+
 /*{1} passwd [UserID] ([CurrentPassword])? [NewPassword]
 修改指定帐户的密码。
 如果该帐户不存在则操作失败；
@@ -102,18 +128,39 @@ void Account_system::User_add(Token_scanner& order) {
 如果当前帐户权限等级为 {7} 则可以省略 [CurrentPassword]。*/
 //尚未完成：{7}的特殊处理。
 void Account_system::Password_change(Token_scanner& order) {
-  String User_ID, CurrentPassword, NewPassword, blank;
-  std::cin >> User_ID;
-  if (rank_now == 7) {
-    std::cin >> CurrentPassword;
-    std::cin >> NewPassword;
-  } else {
-    std::cin >> CurrentPassword;
-    std::cin >> NewPassword;
+  std::string token;
+  MyString User_ID, CurrentPassword, NewPassword, blank;
+  if(rank_now==7&& (order.count_string()==3||order.count_string()==2)){
+    if(order.count_string()==2){
+      token=order.next_token();
+      User_ID=token;
+      token=order.next_token();
+      NewPassword=token;
+    }
+    else{
+      token=order.next_token();
+      User_ID=token;
+      token=order.next_token();
+      CurrentPassword=token;
+      token=order.next_token();
+      NewPassword=token;
+    }
+  }
+  else if(rank_now>=1 && order.count_string()==3){
+      token=order.next_token();
+      User_ID=token;
+      token=order.next_token();
+      CurrentPassword=token;
+      token=order.next_token();
+      NewPassword=token;
+  }
+  else{
+    std::cout<<"Invaild\n";
+    return;
   }
   Account_info target(User_ID, blank, CurrentPassword, 0);
   Account_info temp = Account_storage.search(User_ID, target);
-  if (temp.Password_ != CurrentPassword) {
+  if ((rank_now!=7||order.count_string()==3)&&temp.Password_ != CurrentPassword) {
     return;
   } else {
     temp.Password_ = NewPassword;
@@ -121,18 +168,25 @@ void Account_system::Password_change(Token_scanner& order) {
     return;
   }
 }
+
 /*{7} delete [UserID]
 删除指定帐户。
 如果待删除帐户不存在则操作失败；
 如果待删除帐户已登录则操作失败。*/
 void Account_system::Delete_user(Token_scanner& order) {
-  String user_id, blank;
-  std::cin >> user_id;
+  if(order.count_string()!=1){
+    std::cout<<"Invaild\n";
+    return;
+  }
+  std::string token;
+  MyString User_ID, blank;
+  token=order.next_token();
+  User_ID=token;
   if (rank_now == 7) {
-    Account_info target(user_id, blank, blank, 0);
-    Account_info temp = Account_storage.search(user_id, target);
+    Account_info target(User_ID, blank, blank, 0);
+    Account_info temp = Account_storage.search(User_ID, target);
     if (temp == target) {
-      Account_storage.erase(Account_storage.create(user_id, temp));
+      Account_storage.erase(Account_storage.create(User_ID, temp));
     }
   }
   return;
@@ -144,16 +198,29 @@ void Account_system::Delete_user(Token_scanner& order) {
 如果密码错误则操作失败；
 如果当前帐户权限等级高于登录帐户则可以省略密码。*/
 void Account_system::sign_in(Token_scanner& order) {
-  String user_id, password, blank;
-  std::cin >> user_id;
-  Account_info target(user_id, blank, blank, 0);
-  Account_info temp = Account_storage.search(user_id, target);
+  std::string token;
+  MyString User_ID, Password, blank;
+  if(order.count_string()==2){
+    token=order.next_token();
+    User_ID=token;
+    token=order.next_token();
+    Password=token;
+  }
+  else if(order.count_string()==1){
+    token=order.next_token();
+    User_ID=token;
+  }
+  else{
+    std::cout<<"Invaild\n";
+    return;
+  }
+  Account_info target(User_ID, blank, blank, 0);
+  Account_info temp = Account_storage.search(User_ID, target);
   if (temp.User_rank_ < rank_now) {
     Account_record.push(temp);
     rank_now = temp.User_rank_;
   } else {
-    std::cin >> password;
-    if (temp.Password_ == password) {
+    if (temp.Password_ == Password) {
       Account_record.push(temp);
       rank_now = temp.User_rank_;
     }

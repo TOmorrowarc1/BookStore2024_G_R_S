@@ -33,20 +33,20 @@ register [UserID] [Password] [Username]
 #include"storage.hpp"
 #include"String.hpp"
 #include"String.cpp"
-#include "tokenscanner.hpp"
+#include"tokenscanner.hpp"
 #include"tokenscanner.cpp"
 
 namespace Account_system{
 
     class Account_info{
     private:
-        String User_ID_;
-        String Password_;
-        String User_name_;
+        MyString User_ID_;
+        MyString Password_;
+        MyString User_name_;
         int User_rank_;
     public:
         Account_info()=default;
-        Account_info(const String&,const String&,const String&,int);
+        Account_info(const MyString&,const MyString&,const MyString&,int);
         void operator=(const Account_info&);
         //只比较Key,或者说User_ID大小(单Key)。
         bool operator==(const Account_info&)const;
@@ -63,7 +63,7 @@ namespace Account_system{
         friend void log_out();
     };
 
-    Memory<String, Account_info> Account_storage("account_key","account_value",1000);
+    Memory<MyString, Account_info> Account_storage("account_key","account_value",1000);
     
     std::stack<Account_info> Account_record;
     

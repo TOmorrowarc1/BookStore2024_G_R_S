@@ -77,3 +77,8 @@ void Token_scanner::move_back(){
     --pointer;
     return;
 }
+
+//返回储存字符串的数量。
+int Token_scanner::count_string(){
+    return totalnum;
+}
