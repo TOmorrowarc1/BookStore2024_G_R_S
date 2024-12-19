@@ -72,7 +72,7 @@ bool Account_system::Account_info::operator<=(const Account_info &B) const {
 如果 [UserID] 与已注册帐户重复则操作失败。*/
 void Account_system::Register(Token_scanner& order) {
   if(order.count_string()!=3){
-    std::cout<<"寄了\n";
+    std::cout<<"Invalid\n";
     return;
   }
   std::string token;
