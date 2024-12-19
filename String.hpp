@@ -1,5 +1,5 @@
-#ifndef S_T_R_I_N_G_H_P_P
-#define S_T_R_I_N_G_H_P_P
+#ifndef STRING_HPP
+#define STRING_HPP
 
 #include<iostream>
 #include<string>

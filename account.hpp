@@ -33,6 +33,8 @@ register [UserID] [Password] [Username]
 #include"storage.hpp"
 #include"String.hpp"
 #include"String.cpp"
+#include "tokenscanner.hpp"
+#include"tokenscanner.cpp"
 
 namespace Account_system{
 
@@ -53,11 +55,11 @@ namespace Account_system{
         bool operator<(const Account_info&)const;
         bool operator>=(const Account_info&)const;
         bool operator<=(const Account_info&)const;
-        friend void Register();
-        friend void User_add();
-        friend void Password_change();
-        friend void Delete_user();
-        friend void sign_in();
+        friend void Register(Token_scanner&);
+        friend void User_add(Token_scanner&);
+        friend void Password_change(Token_scanner&);
+        friend void Delete_user(Token_scanner&);
+        friend void sign_in(Token_scanner&);
         friend void log_out();
     };
 
@@ -67,12 +69,11 @@ namespace Account_system{
     
     extern int rank_now;
 
-
-    void Register();
-    void User_add();
-    void Password_change();
-    void Delete_user();
-    void sign_in();
+    void Register(Token_scanner& order);
+    void User_add(Token_scanner& order);
+    void Password_change(Token_scanner& order);
+    void Delete_user(Token_scanner& order);
+    void sign_in(Token_scanner& order);
     void log_out();
 
 

@@ -4,8 +4,8 @@
 2.实例化Memory<String,Account_info>，作为账户存储接口。
 实现如下操作对应函数：
 2.1
-su [UserID] ([Password])?
-读入su之后跳转到此函数，继续读入ID与密码。
+register [UserID] [Password] [Username]
+先访问，返回值若相同再压栈并改变全局变量。
 2.2
 passwd [UserID] ([CurrentPassword])? [NewPassword]
 读入passwd之后跳转到此函数，继续读入ID与密码。
@@ -21,8 +21,8 @@ delete [UserID]
 logout
 弹栈，改变全局变量。
 3.2
-register [UserID] [Password] [Username]
-先访问，返回值若相同再压栈并改变全局变量。
+su [UserID] ([Password])?
+读入su之后跳转到此函数，继续读入ID与密码。
 */
 
 #include "account.hpp"
@@ -68,7 +68,7 @@ bool Account_system::Account_info::operator<=(const Account_info &B) const {
 /*{0} register [UserID] [Password] [Username]
 注册信息如指令格式所示，权限等级为 {1} 的帐户。
 如果 [UserID] 与已注册帐户重复则操作失败。*/
-void Account_system::Register() {
+void Account_system::Register(Token_scanner& order) {
   String User_ID, Password, User_name;
   std::cin >> User_ID >> Password >> User_name;
   Account_info target(User_ID, User_name, Password, 1);
@@ -82,7 +82,7 @@ void Account_system::Register() {
 创建信息如指令格式所示的帐户。
 如果待创建帐户的权限等级大于等于当前帐户权限等级则操作失败；
 如果 [UserID] 与已注册帐户重复则操作失败*/
-void Account_system::User_add() {
+void Account_system::User_add(Token_scanner& order) {
   String User_ID, User_name, Password, blank;
   int Privilege = 0;
   std::cin >> User_ID >> User_name >> Privilege >> Password;
@@ -101,7 +101,7 @@ void Account_system::User_add() {
 如果密码错误则操作失败；
 如果当前帐户权限等级为 {7} 则可以省略 [CurrentPassword]。*/
 //尚未完成：{7}的特殊处理。
-void Account_system::Password_change() {
+void Account_system::Password_change(Token_scanner& order) {
   String User_ID, CurrentPassword, NewPassword, blank;
   std::cin >> User_ID;
   if (rank_now == 7) {
@@ -125,7 +125,7 @@ void Account_system::Password_change() {
 删除指定帐户。
 如果待删除帐户不存在则操作失败；
 如果待删除帐户已登录则操作失败。*/
-void Account_system::Delete_user() {
+void Account_system::Delete_user(Token_scanner& order) {
   String user_id, blank;
   std::cin >> user_id;
   if (rank_now == 7) {
@@ -143,7 +143,7 @@ void Account_system::Delete_user() {
 如果该帐户不存在则操作失败；
 如果密码错误则操作失败；
 如果当前帐户权限等级高于登录帐户则可以省略密码。*/
-void Account_system::sign_in() {
+void Account_system::sign_in(Token_scanner& order) {
   String user_id, password, blank;
   std::cin >> user_id;
   Account_info target(user_id, blank, blank, 0);
