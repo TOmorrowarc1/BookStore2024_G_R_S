@@ -6,18 +6,12 @@
 #include <iostream>
 #include <unordered_set>
 
-
 template <typename Tk, typename Tv> class Memory;
-<<<<<<< HEAD
 
-// Memory,一个巨大的有序二维数组（头表示一部分元素的地址范围），储存key-value结构。
-=======
-class MyString;
 // Memory,一个巨大的有序二维数组（头表示一部分元素的地址范围），储存key-value结构。
 // 需要提前定义元素的序结构，并重载比较(const)与赋值运算符。
 // 需要储存头的文件，头的结构，头的个数以及单个头的大小。
 // 体作为数组存在，需要储存体的文件，单个体的大小，所有元素的总个数。
-// Memory拥有创建新元素，寻找，添加（含裂块），减少（含并块），搜寻（单key单value），列举（单Key多value）数个函数。
 // Memory拥有创建新元素，寻找，添加（含裂块），减少（含并块），搜寻（单key单value），列举（单Key多value）数个函数。
 template <typename Tk, typename Tv> class Memory {
 private:
@@ -66,7 +60,8 @@ private:
     //在已知Atom属于该头所引领的体时，删除，改变对应的体以及自身（不裂块）。
     void erase(const std::string &, const Atom &, const Memory &);
     //在已知Atom属于该头所引领的体时，列举所有的Atom。
-    Atom* list(const std::string &, const Atom &, const Atom &, const Memory &, const Atom*);
+    Atom *list(const std::string &, const Atom &, const Atom &, const Memory &,
+               const Atom *);
     //在已知Atom属于该头所引领的体时，寻找Key对应的Atom。
     Atom search(const std::string &, const Atom &, const Memory &);
     friend class Atom;
@@ -86,7 +81,7 @@ public:
   //减少（含并块）
   void erase(const Atom &);
   //传递参数：Key_。输出Value_到控制台。
-  Tv* list(const Tk &Key_, const Tv &min, const Tv &max);
+  Tv *list(const Tk &Key_, const Tv &min, const Tv &max);
   //寻找对应Key的value(只应用于单Key单Value)，并直接返回value。
   Tv search(const Tk &Key_, const Tv &min);
   friend class Head;
@@ -244,15 +239,16 @@ void Memory<Tk, Tv>::Head::erase(const std::string &file_name,
 }
 //在已知Atom属于该头所引领的体时，列举，不改变对应的体以及自身。
 template <typename Tk, typename Tv>
-typename Memory<Tk, Tv>::Atom* Memory<Tk, Tv>::Head::list(const std::string &file_name, const Atom &front,
-                                const Atom &back, const Memory &environment,const Atom* place) {
+typename Memory<Tk, Tv>::Atom *
+Memory<Tk, Tv>::Head::list(const std::string &file_name, const Atom &front,
+                           const Atom &back, const Memory &environment,
+                           const Atom* place) {
   Atom *temp = new Atom[number + 1];
-  Atom* platform = place;
+  Atom *platform = const_cast<Atom *>(place);
   std::fstream file;
   file.open(file_name, std::fstream::in | std::fstream::out);
   if (!file) {
     std::cerr << "Cannot open the file.\n";
-    return platform;
     return platform;
   }
   int start = begin * environment.size_of_atom;
@@ -261,12 +257,11 @@ typename Memory<Tk, Tv>::Atom* Memory<Tk, Tv>::Head::list(const std::string &fil
   Atom *a1 = std::lower_bound(temp, temp + number, front);
   Atom *a2 = std::upper_bound(temp, temp + number, back);
   for (auto iter = a1; iter < a2; ++iter) {
-    (*platform)=(*iter);
+    (*platform) = (*iter);
     ++platform;
   }
   file.close();
   delete[] temp;
-  return platform;
   return platform;
 }
 
@@ -483,7 +478,7 @@ void Memory<Tk, Tv>::erase(const Atom &target) {
 
 //传递参数：Key_。输出Value_。
 template <typename Tk, typename Tv>
-Tv* Memory<Tk, Tv>::list(const Tk &Key_, const Tv &min, const Tv &max) {
+Tv *Memory<Tk, Tv>::list(const Tk &Key_, const Tv &min, const Tv &max) {
   std::unordered_set<Tv> storage;
   Atom front(Key_, min);
   Atom end(Key_, max);
@@ -500,24 +495,24 @@ Tv* Memory<Tk, Tv>::list(const Tk &Key_, const Tv &min, const Tv &max) {
   int start = find(front, temp);
   int finish = find(end, temp);
   for (int i = start; i <= finish; ++i) {
-    Atom* place=new Atom[size_of_body];
-    Atom* flag=temp[i].list(body_file, front, end, *this,place);
-    for(auto iter=place;iter!=flag;++iter){
-      storage.insert((*iter).value);
+    Atom *place = new Atom[size_of_body];
+    Atom *flag = temp[i].list(body_file, front, end, *this, place);
+    for (auto iter = place; iter != flag; ++iter) {
+      storage.insert((*iter).Value_);
     }
     delete[] place;
   }
   delete[] temp;
-  Tv* storage_=new Tv[storage.size()];
-  int pointer=0;
-  for(auto iter=storage.begin();iter!=storage.end();++iter){
-    storage[pointer]=(*iter);
+  Tv *storage_ = new Tv[storage.size()];
+  for(int i=0;i<storage.size();++i){
+    storage_[i]=blank.Value_;
+  }
+  int pointer = 0;
+  for (auto iter = storage.begin(); iter != storage.end(); ++iter) {
+    storage_[pointer] = (*iter);
     ++pointer;
   }
-  Tv blank;
-  //注意：此处要求Tv有一个初始值，且初始值不会作为Value.
-  storage[pointer]=blank;
-  return storage;
+  return storage_;
 }
 
 template <typename Tk, typename Tv>
