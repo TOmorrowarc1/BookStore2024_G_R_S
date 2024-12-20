@@ -64,9 +64,10 @@ private:
     //在已知Atom属于该头所引领的体时，删除，改变对应的体以及自身（不裂块）。
     void erase(const std::string &, const Atom &, const Memory &);
     //在已知Atom属于该头所引领的体时，列举所有的Atom。
-    Atom* list(const std::string &, const Atom &, const Atom &, const Memory &, const Atom*);
+    Atom *list(const std::string &, const Atom &, const Atom &, const Memory &,
+               const Atom *);
     //在已知Atom属于该头所引领的体时，寻找Key对应的Atom。
-    Atom search(const std::string&, const Atom&, const Memory&);
+    Atom search(const std::string &, const Atom &, const Memory &);
     friend class Atom;
     friend class Memory;
   };
@@ -84,9 +85,9 @@ public:
   //减少（含并块）
   void erase(const Atom &);
   //传递参数：Key_。输出Value_到控制台。
-  Tv* list(const Tk &Key_, const Tv &min, const Tv &max);
+  Tv *list(const Tk &Key_, const Tv &min, const Tv &max);
   //寻找对应Key的value(只应用于单Key单Value)，并直接返回value。
-  Tv search(const Tk&Key_, const Tv &min);
+  Tv search(const Tk &Key_, const Tv &min);
   friend class Head;
 };
 
@@ -101,7 +102,7 @@ Memory<Tk, Tv>::Atom::Atom(const Tk &Key_1, const Tv &Value_1) {
 //作比较，要求对应Tk类型,Tv类型重载比较运算符。
 template <typename Tk, typename Tv>
 bool Memory<Tk, Tv>::Atom::operator>(const Atom &B) const {
-  const Atom &A = const_cast<Atom&>(*this);
+  const Atom &A = const_cast<Atom &>(*this);
   int compare = -1;
   if (A.Key_ == B.Key_) {
     compare = 0;
@@ -242,10 +243,12 @@ void Memory<Tk, Tv>::Head::erase(const std::string &file_name,
 }
 //在已知Atom属于该头所引领的体时，列举，不改变对应的体以及自身。
 template <typename Tk, typename Tv>
-typename Memory<Tk, Tv>::Atom* Memory<Tk, Tv>::Head::list(const std::string &file_name, const Atom &front,
-                                const Atom &back, const Memory &environment,const Atom* place) {
+typename Memory<Tk, Tv>::Atom *
+Memory<Tk, Tv>::Head::list(const std::string &file_name, const Atom &front,
+                           const Atom &back, const Memory &environment,
+                           const Atom* place) {
   Atom *temp = new Atom[number + 1];
-  Atom* platform = place;
+  Atom *platform = const_cast<Atom *>(place);
   std::fstream file;
   file.open(file_name, std::fstream::in | std::fstream::out);
   if (!file) {
@@ -257,9 +260,8 @@ typename Memory<Tk, Tv>::Atom* Memory<Tk, Tv>::Head::list(const std::string &fil
   file.read(reinterpret_cast<char *>(temp), number * environment.size_of_atom);
   Atom *a1 = std::lower_bound(temp, temp + number, front);
   Atom *a2 = std::upper_bound(temp, temp + number, back);
-  bool flag = 0;
   for (auto iter = a1; iter < a2; ++iter) {
-    (*platform)=(*iter);
+    (*platform) = (*iter);
     ++platform;
   }
   file.close();
@@ -268,7 +270,9 @@ typename Memory<Tk, Tv>::Atom* Memory<Tk, Tv>::Head::list(const std::string &fil
 }
 
 template <typename Tk, typename Tv>
-typename Memory<Tk, Tv>::Atom Memory<Tk, Tv>::Head::search(const std::string& file_name, const Atom& Key_min, const Memory& environment){
+typename Memory<Tk, Tv>::Atom
+Memory<Tk, Tv>::Head::search(const std::string &file_name, const Atom &Key_min,
+                             const Memory &environment) {
   Atom *temp = new Atom[number + 1];
   std::fstream file;
   file.open(file_name, std::fstream::in | std::fstream::out);
@@ -281,8 +285,8 @@ typename Memory<Tk, Tv>::Atom Memory<Tk, Tv>::Head::search(const std::string& fi
   file.read(reinterpret_cast<char *>(temp), number * environment.size_of_atom);
   Atom *target = std::lower_bound(temp, temp + number, Key_min);
   Atom target_catch;
-  if(target->Key_==Key_min.Key_){
-    target_catch=(*target);
+  if (target->Key_ == Key_min.Key_) {
+    target_catch = (*target);
   }
   file.close();
   delete[] temp;
@@ -329,7 +333,8 @@ template <typename Tk, typename Tv> void Memory<Tk, Tv>::initialise() {
 }
 //根据传入参数构造Atom.
 template <typename Tk, typename Tv>
-typename Memory<Tk, Tv>::Atom Memory<Tk, Tv>::create(const Tk &Key_,const Tv &Value_) {
+typename Memory<Tk, Tv>::Atom Memory<Tk, Tv>::create(const Tk &Key_,
+                                                     const Tv &Value_) {
   Memory<Tk, Tv>::Atom target(Key_, Value_);
   return target;
 }
@@ -477,47 +482,48 @@ void Memory<Tk, Tv>::erase(const Atom &target) {
 
 //传递参数：Key_。输出Value_。
 template <typename Tk, typename Tv>
-Tv* Memory<Tk, Tv>::list(const Tk &Key_, const Tv &min, const Tv &max) {
+Tv *Memory<Tk, Tv>::list(const Tk &Key_, const Tv &min, const Tv &max) {
   std::unordered_set<Tv> storage;
   Atom front(Key_, min);
   Atom end(Key_, max);
+  Atom blank;
   Head *temp = new Head[num_of_heads + 1];
   file.open(head_file, std::fstream::in | std::fstream::out);
   if (!file) {
     std::cerr << "Cannot open the file.\n";
-    return;
+    return nullptr;
   }
   file.seekg(0);
   file.read(reinterpret_cast<char *>(temp), num_of_heads * size_of_head);
   file.close();
   int start = find(front, temp);
   int finish = find(end, temp);
-  bool flag = 0;
   for (int i = start; i <= finish; ++i) {
-    Atom* place=new Atom[size_of_body];
-    Atom* flag=temp[i].list(body_file, front, end, *this,place);
-    for(auto iter=place;iter!=flag;++iter){
-      storage.insert((*iter).value);
+    Atom *place = new Atom[size_of_body];
+    Atom *flag = temp[i].list(body_file, front, end, *this, place);
+    for (auto iter = place; iter != flag; ++iter) {
+      storage.insert((*iter).Value_);
     }
     delete[] place;
   }
   delete[] temp;
-  Tv* storage_=new Tv[storage.size()];
-  int pointer=0;
-  for(auto iter=storage.begin();iter!=storage.end();++iter){
-    storage[pointer]=(*iter);
+  //小心：必须要求初始化。
+  Tv *storage_ = new Tv[storage.size()];
+  for(int i=0;i<storage.size();++i){
+    storage_[i]=blank.Value_;
+  }
+  int pointer = 0;
+  for (auto iter = storage.begin(); iter != storage.end(); ++iter) {
+    storage_[pointer] = (*iter);
     ++pointer;
   }
-  Tv blank;
-  //注意：此处要求Tv有一个初始值，且初始值不会作为Value.
-  storage[pointer]=blank;
-  return storage;
+  return storage_;
 }
 
 template <typename Tk, typename Tv>
-Tv Memory<Tk, Tv>::search(const Tk&Key_,const Tv& min){
-  Atom key_min(Key_,min);
-  Atom target_catcher,blank;
+Tv Memory<Tk, Tv>::search(const Tk &Key_, const Tv &min) {
+  Atom key_min(Key_, min);
+  Atom target_catcher, blank;
   Head *temp = new Head[num_of_heads + 1];
   file.open(head_file, std::fstream::in | std::fstream::out);
   if (!file) {
@@ -528,15 +534,13 @@ Tv Memory<Tk, Tv>::search(const Tk&Key_,const Tv& min){
   file.read(reinterpret_cast<char *>(temp), num_of_heads * size_of_head);
   file.close();
   int start = find(key_min, temp);
-  target_catcher = temp[start].search(body_file,key_min,*this);
-  if(target_catcher==blank){
-    start+=1;
-    target_catcher = temp[start].search(body_file,key_min,*this);
+  target_catcher = temp[start].search(body_file, key_min, *this);
+  if (target_catcher == blank) {
+    start += 1;
+    target_catcher = temp[start].search(body_file, key_min, *this);
   }
   delete[] temp;
   return target_catcher.Value_;
 }
-
-
 
 #endif
