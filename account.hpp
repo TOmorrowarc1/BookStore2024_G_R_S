@@ -55,6 +55,7 @@ namespace Account_system{
         bool operator<(const Account_info&)const;
         bool operator>=(const Account_info&)const;
         bool operator<=(const Account_info&)const;
+        friend void start();
         friend void Register(Token_scanner&);
         friend void User_add(Token_scanner&);
         friend void Password_change(Token_scanner&);
@@ -67,8 +68,9 @@ namespace Account_system{
     
     std::stack<Account_info> Account_record;
     
-    extern int rank_now;
+    int rank_now = 0;
 
+    void start();
     void Register(Token_scanner& order);
     void User_add(Token_scanner& order);
     void Password_change(Token_scanner& order);

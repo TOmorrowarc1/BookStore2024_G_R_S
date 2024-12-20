@@ -26,6 +26,7 @@ su [UserID] ([Password])?
 */
 
 #include "account.hpp"
+#include "String.hpp"
 
 Account_system::Account_info::Account_info(const MyString &user_ID,
                                            const MyString &user_name,
@@ -66,13 +67,19 @@ bool Account_system::Account_info::operator<=(const Account_info &B) const {
 
 
 
+void Account_system::start(){
+  MyString root_ID("root");
+  MyString Password("sjtu");
+  Account_info root(root_ID,root_ID,Password,7);
+  Account_storage.insert(Account_storage.create(root_ID, root));
+}
 //下面是函数的正式实现：
 /*{0} register [UserID] [Password] [Username]
 注册信息如指令格式所示，权限等级为 {1} 的帐户。
 如果 [UserID] 与已注册帐户重复则操作失败。*/
 void Account_system::Register(Token_scanner& order) {
   if(order.count_string()!=3){
-    std::cout<<"Invaild\n";
+    std::cout<<"Invalid\n";
     return;
   }
   std::string token;
@@ -88,6 +95,9 @@ void Account_system::Register(Token_scanner& order) {
   if (temp != target) {
     Account_storage.insert(Account_storage.create(User_ID, target));
   }
+  else{
+    std::cout<<"Invalid\n";
+  }
   return;
 }
 
@@ -97,7 +107,7 @@ void Account_system::Register(Token_scanner& order) {
 如果 [UserID] 与已注册帐户重复则操作失败*/
 void Account_system::User_add(Token_scanner& order) {
   if(order.count_string()!=4){
-    std::cout<<"Invaild\n";
+    std::cout<<"Invalid\n";
     return;
   }
   std::string token;
@@ -117,6 +127,12 @@ void Account_system::User_add(Token_scanner& order) {
     if (temp != target) {
       Account_storage.insert(Account_storage.create(User_ID, target));
     }
+    else{
+      std::cout<<"Invalid\n";
+    }
+  }
+  else{
+    std::cout<<"Invalid\n";
   }
   return;
 }
@@ -155,15 +171,17 @@ void Account_system::Password_change(Token_scanner& order) {
       NewPassword=token;
   }
   else{
-    std::cout<<"Invaild\n";
+    std::cout<<"Invalid\n";
     return;
   }
   Account_info target(User_ID, blank, CurrentPassword, 0);
   Account_info temp = Account_storage.search(User_ID, target);
   if ((rank_now!=7||order.count_string()==3)&&temp.Password_ != CurrentPassword) {
+    std::cout<<"Invalid\n";
     return;
   } else {
     temp.Password_ = NewPassword;
+    Account_storage.erase(Account_storage.create(User_ID, temp));
     Account_storage.insert(Account_storage.create(User_ID, temp));
     return;
   }
@@ -175,7 +193,7 @@ void Account_system::Password_change(Token_scanner& order) {
 如果待删除帐户已登录则操作失败。*/
 void Account_system::Delete_user(Token_scanner& order) {
   if(order.count_string()!=1){
-    std::cout<<"Invaild\n";
+    std::cout<<"Invalid\n";
     return;
   }
   std::string token;
@@ -188,6 +206,12 @@ void Account_system::Delete_user(Token_scanner& order) {
     if (temp == target) {
       Account_storage.erase(Account_storage.create(User_ID, temp));
     }
+    else{
+      std::cout<<"Invalid\n";
+    }
+  }
+  else{
+    std::cout<<"Invalid\n";
   }
   return;
 }
@@ -211,7 +235,7 @@ void Account_system::sign_in(Token_scanner& order) {
     User_ID=token;
   }
   else{
-    std::cout<<"Invaild\n";
+    std::cout<<"Invalid\n";
     return;
   }
   Account_info target(User_ID, blank, blank, 0);
@@ -219,10 +243,14 @@ void Account_system::sign_in(Token_scanner& order) {
   if (temp.User_rank_ < rank_now) {
     Account_record.push(temp);
     rank_now = temp.User_rank_;
+    //考虑如下问题：权限高但是输入密码？
   } else {
     if (temp.Password_ == Password) {
       Account_record.push(temp);
       rank_now = temp.User_rank_;
+    }
+    else{
+      std::cout<<"Invalid\n";
     }
   }
   return;
@@ -234,6 +262,15 @@ void Account_system::sign_in(Token_scanner& order) {
 void Account_system::log_out() {
   if (!Account_record.empty()) {
     Account_record.pop();
-    rank_now = Account_record.top().User_rank_;
+    if(Account_record.empty()){
+      rank_now=0;
+    }
+    else{
+      rank_now = Account_record.top().User_rank_;
+    }
   }
+  else{
+    std::cout<<"Invalid\n";
+  }
+  return;
 }
