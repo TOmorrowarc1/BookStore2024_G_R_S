@@ -9,7 +9,7 @@
 
 
 template <typename Tk, typename Tv> class Memory;
-class String;
+class MyString;
 // Memory,一个巨大的？？？（头表示一部分元素的地址范围），储存key-value结构。
 // 需要提前定义元素的序结构，并重载比较(const)与赋值运算符。
 // 需要储存头的文件，头的结构，头的个数以及单个头的大小。
