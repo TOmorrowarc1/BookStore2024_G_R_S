@@ -1,10 +1,6 @@
 #ifndef BOOKMANAGE_HPP
 #define BOOKMANAGE_HPP
 
-#include"String.hpp"
-#include"String.cpp"
-#include"tokenscanner.hpp"
-#include"tokenscanner.cpp"
 #include"storage.hpp"
 #include"account.hpp"
 #include"account.cpp"
@@ -43,33 +39,29 @@ namespace Book_manage{
         bool operator>=(const Book&);
         bool operator<(const Book&);
         bool operator<=(const Book&);
-        friend Book find_ISBN(Token_scanner&);
-        friend MyString& find_Book_Name(Token_scanner&);
-        friend MyString& find_Author(Token_scanner&);
-        friend MyString& find_Key(Token_scanner&);
         friend void select(Token_scanner&);
-        friend void create(Token_scanner&);
         friend void modify(Token_scanner&);
+        friend Book find_ISBN(Token_scanner&);
+        friend MyString find_Book_Name(Token_scanner&);
+        friend MyString find_Author(Token_scanner&);
+        friend MyString find_Key(Token_scanner&);
         //记得输出浮点数。
         friend void sell(Token_scanner&);
         friend void import(Token_scanner&);
     };
 
-    std::unordered_map<std::string,std::string> selection;
+    //如何使用自定义类？
+    std::unordered_map<std::string,Book> selection;
 
     Memory<MyString,Book> storage("ISBN_file","Book_file",1000);
     Memory<MyString,MyString> bookname_ISBN("bookname_file","bookname_ISBN_file",1000);
     Memory<MyString,MyString> author_ISBN("author_file","author_ISBN_file",1000);
     Memory<MyString,MyString> keywords_ISBN("keywords_file","keywords_ISBN_file",1000);
 
-    Book find_ISBN(Token_scanner&);
-    MyString& find_Book_Name(Token_scanner&);
-    MyString& find_Author(Token_scanner&);
-    MyString& find_Key(Token_scanner&);
     void select(Token_scanner&);
-    void create(Token_scanner&);
     void modify(Token_scanner&);
-        //记得输出浮点数。
+    void show(Token_scanner&);
+    //记得输出浮点数。
     void sell(Token_scanner&);
     void import(Token_scanner&);
 
