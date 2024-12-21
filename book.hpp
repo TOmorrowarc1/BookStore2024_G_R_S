@@ -41,10 +41,7 @@ namespace Book_manage{
         bool operator<=(const Book&);
         friend void select(Token_scanner&);
         friend void modify(Token_scanner&);
-        friend Book find_ISBN(Token_scanner&);
-        friend MyString find_Book_Name(Token_scanner&);
-        friend MyString find_Author(Token_scanner&);
-        friend MyString find_Key(Token_scanner&);
+        friend void show(Token_scanner&);
         //记得输出浮点数。
         friend void sell(Token_scanner&);
         friend void import(Token_scanner&);
