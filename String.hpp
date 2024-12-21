@@ -15,6 +15,7 @@ public:
   MyString() = default;
   MyString(const std::string&);
   ~MyString() = default;
+  std::string return_content();
   bool operator>(const MyString &)const;
   bool operator==(const MyString &)const;
   bool operator!=(const MyString &)const;
@@ -23,6 +24,7 @@ public:
   bool operator<=(const MyString &)const;
   void operator=(const MyString &);
   void operator=(const std::string&);
+  MyString* words_split(char signal);
   friend std::ostream& operator<<(std::ostream& output,const MyString& object);
   friend std::istream& operator>>(std::istream& output,const MyString& object);
 };

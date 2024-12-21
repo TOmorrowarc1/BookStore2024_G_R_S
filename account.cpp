@@ -26,7 +26,6 @@ su [UserID] ([Password])?
 */
 
 #include "account.hpp"
-#include "String.hpp"
 
 Account_system::Account_info::Account_info(const MyString &user_ID,
                                            const MyString &user_name,
@@ -64,7 +63,9 @@ bool Account_system::Account_info::operator>=(const Account_info &B) const {
 bool Account_system::Account_info::operator<=(const Account_info &B) const {
   return User_ID_ <= B.User_ID_;
 }
-
+MyString Account_system::Account_info::user_id(){
+  return User_ID_;
+}
 
 
 void Account_system::start(){
@@ -121,7 +122,7 @@ void Account_system::User_add(Token_scanner& order) {
   Privilege=token[0]-'0';
   token=order.next_token();
   User_name=token;
-  if (rank_now > Privilege && rank_now >= 3) {
+  if (rank_now > Privilege && rank_now >= 3 && (Privilege==3||Privilege==1||Privilege==0)) {
     Account_info target(User_ID, User_name, Password, Privilege);
     Account_info temp = Account_storage.search(User_ID, target);
     if (temp != target) {

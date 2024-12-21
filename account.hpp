@@ -55,6 +55,7 @@ namespace Account_system{
         bool operator<(const Account_info&)const;
         bool operator>=(const Account_info&)const;
         bool operator<=(const Account_info&)const;
+        MyString user_id();
         friend void start();
         friend void Register(Token_scanner&);
         friend void User_add(Token_scanner&);
