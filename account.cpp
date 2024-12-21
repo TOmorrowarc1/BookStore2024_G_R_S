@@ -26,6 +26,7 @@ su [UserID] ([Password])?
 */
 
 #include "account.hpp"
+#include "book.hpp"
 
 Account_system::Account_info::Account_info(const MyString &user_ID,
                                            const MyString &user_name,
@@ -63,41 +64,37 @@ bool Account_system::Account_info::operator>=(const Account_info &B) const {
 bool Account_system::Account_info::operator<=(const Account_info &B) const {
   return User_ID_ <= B.User_ID_;
 }
-MyString Account_system::Account_info::user_id(){
-  return User_ID_;
-}
+MyString Account_system::Account_info::user_id() { return User_ID_; }
 
-
-void Account_system::start(){
+void Account_system::start() {
   MyString root_ID("root");
   MyString Password("sjtu");
-  Account_info root(root_ID,root_ID,Password,7);
+  Account_info root(root_ID, root_ID, Password, 7);
   Account_storage.insert(Account_storage.create(root_ID, root));
 }
 //下面是函数的正式实现：
 /*{0} register [UserID] [Password] [Username]
 注册信息如指令格式所示，权限等级为 {1} 的帐户。
 如果 [UserID] 与已注册帐户重复则操作失败。*/
-void Account_system::Register(Token_scanner& order) {
-  if(order.count_string()!=3){
-    std::cout<<"Invalid\n";
+void Account_system::Register(Token_scanner &order) {
+  if (order.count_string() != 3) {
+    std::cout << "Invalid\n";
     return;
   }
   std::string token;
   MyString User_ID, User_name, Password;
-  token=order.next_token();
-  User_ID=token;
-  token=order.next_token();
-  Password=token;
-  token=order.next_token();
-  User_name=token;
+  token = order.next_token();
+  User_ID = token;
+  token = order.next_token();
+  Password = token;
+  token = order.next_token();
+  User_name = token;
   Account_info target(User_ID, User_name, Password, 1);
   Account_info temp = Account_storage.search(User_ID, target);
   if (temp != target) {
     Account_storage.insert(Account_storage.create(User_ID, target));
-  }
-  else{
-    std::cout<<"Invalid\n";
+  } else {
+    std::cout << "Invalid\n";
   }
   return;
 }
@@ -106,34 +103,33 @@ void Account_system::Register(Token_scanner& order) {
 创建信息如指令格式所示的帐户。
 如果待创建帐户的权限等级大于等于当前帐户权限等级则操作失败；
 如果 [UserID] 与已注册帐户重复则操作失败*/
-void Account_system::User_add(Token_scanner& order) {
-  if(order.count_string()!=4){
-    std::cout<<"Invalid\n";
+void Account_system::User_add(Token_scanner &order) {
+  if (order.count_string() != 4) {
+    std::cout << "Invalid\n";
     return;
   }
   std::string token;
   MyString User_ID, User_name, Password, blank;
   int Privilege = 0;
-  token=order.next_token();
-  User_ID=token;
-  token=order.next_token();
-  Password=token;
-  token=order.next_token();
-  Privilege=token[0]-'0';
-  token=order.next_token();
-  User_name=token;
-  if (rank_now > Privilege && rank_now >= 3 && (Privilege==3||Privilege==1||Privilege==0)) {
+  token = order.next_token();
+  User_ID = token;
+  token = order.next_token();
+  Password = token;
+  token = order.next_token();
+  Privilege = token[0] - '0';
+  token = order.next_token();
+  User_name = token;
+  if (rank_now > Privilege && rank_now >= 3 &&
+      (Privilege == 3 || Privilege == 1 || Privilege == 0)) {
     Account_info target(User_ID, User_name, Password, Privilege);
     Account_info temp = Account_storage.search(User_ID, target);
     if (temp != target) {
       Account_storage.insert(Account_storage.create(User_ID, target));
+    } else {
+      std::cout << "Invalid\n";
     }
-    else{
-      std::cout<<"Invalid\n";
-    }
-  }
-  else{
-    std::cout<<"Invalid\n";
+  } else {
+    std::cout << "Invalid\n";
   }
   return;
 }
@@ -144,41 +140,40 @@ void Account_system::User_add(Token_scanner& order) {
 如果密码错误则操作失败；
 如果当前帐户权限等级为 {7} 则可以省略 [CurrentPassword]。*/
 //尚未完成：{7}的特殊处理。
-void Account_system::Password_change(Token_scanner& order) {
+void Account_system::Password_change(Token_scanner &order) {
   std::string token;
   MyString User_ID, CurrentPassword, NewPassword, blank;
-  if(rank_now==7&& (order.count_string()==3||order.count_string()==2)){
-    if(order.count_string()==2){
-      token=order.next_token();
-      User_ID=token;
-      token=order.next_token();
-      NewPassword=token;
+  if (rank_now == 7 &&
+      (order.count_string() == 3 || order.count_string() == 2)) {
+    if (order.count_string() == 2) {
+      token = order.next_token();
+      User_ID = token;
+      token = order.next_token();
+      NewPassword = token;
+    } else {
+      token = order.next_token();
+      User_ID = token;
+      token = order.next_token();
+      CurrentPassword = token;
+      token = order.next_token();
+      NewPassword = token;
     }
-    else{
-      token=order.next_token();
-      User_ID=token;
-      token=order.next_token();
-      CurrentPassword=token;
-      token=order.next_token();
-      NewPassword=token;
-    }
-  }
-  else if(rank_now>=1 && order.count_string()==3){
-      token=order.next_token();
-      User_ID=token;
-      token=order.next_token();
-      CurrentPassword=token;
-      token=order.next_token();
-      NewPassword=token;
-  }
-  else{
-    std::cout<<"Invalid\n";
+  } else if (rank_now >= 1 && order.count_string() == 3) {
+    token = order.next_token();
+    User_ID = token;
+    token = order.next_token();
+    CurrentPassword = token;
+    token = order.next_token();
+    NewPassword = token;
+  } else {
+    std::cout << "Invalid\n";
     return;
   }
   Account_info target(User_ID, blank, CurrentPassword, 0);
   Account_info temp = Account_storage.search(User_ID, target);
-  if ((rank_now!=7||order.count_string()==3)&&temp.Password_ != CurrentPassword) {
-    std::cout<<"Invalid\n";
+  if ((rank_now != 7 || order.count_string() == 3) &&
+      temp.Password_ != CurrentPassword) {
+    std::cout << "Invalid\n";
     return;
   } else {
     temp.Password_ = NewPassword;
@@ -192,27 +187,25 @@ void Account_system::Password_change(Token_scanner& order) {
 删除指定帐户。
 如果待删除帐户不存在则操作失败；
 如果待删除帐户已登录则操作失败。*/
-void Account_system::Delete_user(Token_scanner& order) {
-  if(order.count_string()!=1){
-    std::cout<<"Invalid\n";
+void Account_system::Delete_user(Token_scanner &order) {
+  if (order.count_string() != 1) {
+    std::cout << "Invalid\n";
     return;
   }
   std::string token;
   MyString User_ID, blank;
-  token=order.next_token();
-  User_ID=token;
+  token = order.next_token();
+  User_ID = token;
   if (rank_now == 7) {
     Account_info target(User_ID, blank, blank, 0);
     Account_info temp = Account_storage.search(User_ID, target);
     if (temp == target) {
       Account_storage.erase(Account_storage.create(User_ID, temp));
+    } else {
+      std::cout << "Invalid\n";
     }
-    else{
-      std::cout<<"Invalid\n";
-    }
-  }
-  else{
-    std::cout<<"Invalid\n";
+  } else {
+    std::cout << "Invalid\n";
   }
   return;
 }
@@ -222,21 +215,19 @@ void Account_system::Delete_user(Token_scanner& order) {
 如果该帐户不存在则操作失败；
 如果密码错误则操作失败；
 如果当前帐户权限等级高于登录帐户则可以省略密码。*/
-void Account_system::sign_in(Token_scanner& order) {
+void Account_system::sign_in(Token_scanner &order) {
   std::string token;
   MyString User_ID, Password, blank;
-  if(order.count_string()==2){
-    token=order.next_token();
-    User_ID=token;
-    token=order.next_token();
-    Password=token;
-  }
-  else if(order.count_string()==1){
-    token=order.next_token();
-    User_ID=token;
-  }
-  else{
-    std::cout<<"Invalid\n";
+  if (order.count_string() == 2) {
+    token = order.next_token();
+    User_ID = token;
+    token = order.next_token();
+    Password = token;
+  } else if (order.count_string() == 1) {
+    token = order.next_token();
+    User_ID = token;
+  } else {
+    std::cout << "Invalid\n";
     return;
   }
   Account_info target(User_ID, blank, blank, 0);
@@ -249,9 +240,8 @@ void Account_system::sign_in(Token_scanner& order) {
     if (temp.Password_ == Password) {
       Account_record.push(temp);
       rank_now = temp.User_rank_;
-    }
-    else{
-      std::cout<<"Invalid\n";
+    } else {
+      std::cout << "Invalid\n";
     }
   }
   return;
@@ -262,16 +252,16 @@ void Account_system::sign_in(Token_scanner& order) {
 如无已登录帐户则操作失败。*/
 void Account_system::log_out() {
   if (!Account_record.empty()) {
+    std::string user_id = Account_record.top().user_id().return_content();
+    Book_manage::selection.erase(user_id);
     Account_record.pop();
-    if(Account_record.empty()){
-      rank_now=0;
-    }
-    else{
+    if (Account_record.empty()) {
+      rank_now = 0;
+    } else {
       rank_now = Account_record.top().User_rank_;
     }
-  }
-  else{
-    std::cout<<"Invalid\n";
+  } else {
+    std::cout << "Invalid\n";
   }
   return;
 }
