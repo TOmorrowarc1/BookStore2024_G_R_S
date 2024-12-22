@@ -1,3 +1,4 @@
+#pragma once
 #ifndef STRING_HPP
 #define STRING_HPP
 
@@ -25,6 +26,7 @@ public:
   void operator=(const MyString &);
   void operator=(const std::string&);
   MyString* words_split(char signal);
+  void delete_quote();
   friend std::ostream& operator<<(std::ostream& output,const MyString& object);
   friend std::istream& operator>>(std::istream& output,const MyString& object);
 };
