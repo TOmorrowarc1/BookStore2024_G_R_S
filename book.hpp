@@ -1,10 +1,13 @@
 #ifndef BOOKMANAGE_HPP
 #define BOOKMANAGE_HPP
 
-#include"storage.hpp"
-#include"account.hpp"
-#include"account.cpp"
-#include<unordered_map>
+#include "String.hpp"
+#include "storage.hpp"
+#include "tokenscanner.hpp"
+#include <unordered_map>
+
+class MyString;
+class Token_scanner;
 
 /*在书籍管理系统中，本程序实现如下功能：
 1.实现Book类，储存一本书籍相关信息：ISBN，书名，作者名，关键词，库存书籍数量，单价。
@@ -17,53 +20,55 @@
 3.4 购买图书。
 3.5 图书进货。*/
 
-namespace Book_manage{
-    class Book{
-        //比较ISBN号以区分大小。
-        private:
-        MyString ISBN_;
-        MyString Book_name_;
-        MyString Author_;
-        //用一串字符串配合对应|储存关键字。
-        MyString Key_string;
-        int num_storage=0;
-        double price=0;
-        public:
-        Book()=default;
-        Book(const MyString&,const MyString&,const MyString&,const MyString&,int,double);
-        Book(const Book&);
-        void operator=(const Book&);
-        bool operator==(const Book&);
-        bool operator!=(const Book&);
-        bool operator>(const Book&);
-        bool operator>=(const Book&);
-        bool operator<(const Book&);
-        bool operator<=(const Book&);
-        friend void select(Token_scanner&);
-        friend void modify(Token_scanner&);
-        friend void show(Token_scanner&);
-        //记得输出浮点数。
-        friend void sell(Token_scanner&);
-        friend void import(Token_scanner&);
-    };
+namespace Book_manage {
+class Book {
+  //比较ISBN号以区分大小。
+private:
+  MyString ISBN_;
+  MyString Book_name_;
+  MyString Author_;
+  //用一串字符串配合对应|储存关键字。
+  MyString Key_string;
+  int num_storage = 0;
+  double price = 0;
 
-    //如何使用自定义类？
-    std::unordered_map<std::string,Book> selection;
+public:
+  Book() = default;
+  Book(const MyString &, const MyString &, const MyString &, const MyString &,
+       int, double);
+  Book(const Book &);
+  void operator=(const Book &);
+  bool operator==(const Book &) const;
+  bool operator!=(const Book &) const;
+  bool operator>(const Book &) const;
+  bool operator>=(const Book &) const;
+  bool operator<(const Book &) const;
+  bool operator<=(const Book &) const;
+  friend void select(Token_scanner &);
+  friend void modify(Token_scanner &);
+  friend void show(Token_scanner &);
+  //记得输出浮点数。
+  friend void sell(Token_scanner &);
+  friend void import(Token_scanner &);
+};
 
-    Memory<MyString,Book> storage("ISBN_file","Book_file",1000);
-    Memory<MyString,MyString> bookname_ISBN("bookname_file","bookname_ISBN_file",1000);
-    Memory<MyString,MyString> author_ISBN("author_file","author_ISBN_file",1000);
-    Memory<MyString,MyString> keywords_ISBN("keywords_file","keywords_ISBN_file",1000);
+//如何使用自定义类？
+std::unordered_map<std::string, Book> selection;
 
-    void select(Token_scanner&);
-    void modify(Token_scanner&);
-    void show(Token_scanner&);
-    //记得输出浮点数。
-    void sell(Token_scanner&);
-    void import(Token_scanner&);
+Memory<MyString, Book> storage("ISBN_file", "Book_file", 1000);
+Memory<MyString, MyString> bookname_ISBN("bookname_file", "bookname_ISBN_file",
+                                         1000);
+Memory<MyString, MyString> author_ISBN("author_file", "author_ISBN_file", 1000);
+Memory<MyString, MyString> keywords_ISBN("keywords_file", "keywords_ISBN_file",
+                                         1000);
 
+void select(Token_scanner &);
+void modify(Token_scanner &);
+void show(Token_scanner &);
+//记得输出浮点数。
+void sell(Token_scanner &);
+void import(Token_scanner &);
 
-}
+} // namespace Book_manage
 
 #endif
-

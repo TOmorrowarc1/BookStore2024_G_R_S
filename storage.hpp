@@ -1,10 +1,11 @@
-#ifndef S_T_O_R_A_G_E_H_P_P
-#define S_T_O_R_A_G_E_H_P_P
+#pragma once
+#ifndef STORAGE_HPP
+#define STORAGE_HPP
 
 #include <algorithm>
 #include <fstream>
 #include <iostream>
-#include <unordered_set>
+#include <set>
 
 template <typename Tk, typename Tv> class Memory;
 
@@ -62,6 +63,8 @@ private:
     //在已知Atom属于该头所引领的体时，列举所有的Atom。
     Atom *list(const std::string &, const Atom &, const Atom &, const Memory &,
                const Atom *);
+    //列举头中所有元素。
+    Atom *all(const std::string &, const Memory &, const Atom *);
     //在已知Atom属于该头所引领的体时，寻找Key对应的Atom。
     Atom search(const std::string &, const Atom &, const Memory &);
     friend class Atom;
@@ -82,6 +85,8 @@ public:
   void erase(const Atom &);
   //传递参数：Key_。输出Value_到控制台。
   Tv *list(const Tk &Key_, const Tv &min, const Tv &max);
+  //返回所有value值。
+  Tv *all();
   //寻找对应Key的value(只应用于单Key单Value)，并直接返回value。
   Tv search(const Tk &Key_, const Tv &min);
   friend class Head;
@@ -242,7 +247,7 @@ template <typename Tk, typename Tv>
 typename Memory<Tk, Tv>::Atom *
 Memory<Tk, Tv>::Head::list(const std::string &file_name, const Atom &front,
                            const Atom &back, const Memory &environment,
-                           const Atom* place) {
+                           const Atom *place) {
   Atom *temp = new Atom[number + 1];
   Atom *platform = const_cast<Atom *>(place);
   std::fstream file;
@@ -258,6 +263,30 @@ Memory<Tk, Tv>::Head::list(const std::string &file_name, const Atom &front,
   Atom *a2 = std::upper_bound(temp, temp + number, back);
   for (auto iter = a1; iter < a2; ++iter) {
     (*platform) = (*iter);
+    ++platform;
+  }
+  file.close();
+  delete[] temp;
+  return platform;
+}
+
+template <typename Tk, typename Tv>
+typename Memory<Tk, Tv>::Atom *
+Memory<Tk, Tv>::Head::all(const std::string &file_name,
+                          const Memory &environment, const Atom *place) {
+  Atom *temp = new Atom[number + 1];
+  Atom *platform = const_cast<Atom *>(place);
+  std::fstream file;
+  file.open(file_name, std::fstream::in | std::fstream::out);
+  if (!file) {
+    std::cerr << "Cannot open the file.\n";
+    return platform;
+  }
+  int start = begin * environment.size_of_atom;
+  file.seekg(start);
+  file.read(reinterpret_cast<char *>(temp), number * environment.size_of_atom);
+  for (int i = 0; i < number; ++i) {
+    (*platform) = temp[i];
     ++platform;
   }
   file.close();
@@ -441,7 +470,7 @@ void Memory<Tk, Tv>::erase(const Atom &target) {
   int place = find(target, temp);
   temp[place].erase(body_file, target, *this);
   //销毁空块。
-  if (temp[place].number == 0) {
+  if (temp[place].number == 0 && place != 0) {
     for (int i = place; i < num_of_heads; ++i) {
       temp[i] = temp[i + 1];
     }
@@ -479,7 +508,7 @@ void Memory<Tk, Tv>::erase(const Atom &target) {
 //传递参数：Key_。输出Value_。
 template <typename Tk, typename Tv>
 Tv *Memory<Tk, Tv>::list(const Tk &Key_, const Tv &min, const Tv &max) {
-  std::unordered_set<Tv> storage;
+  std::set<Tv> storage;
   Atom front(Key_, min);
   Atom end(Key_, max);
   Atom blank;
@@ -503,15 +532,49 @@ Tv *Memory<Tk, Tv>::list(const Tk &Key_, const Tv &min, const Tv &max) {
     delete[] place;
   }
   delete[] temp;
-  Tv *storage_ = new Tv[storage.size()];
-  for(int i=0;i<storage.size();++i){
-    storage_[i]=blank.Value_;
+  if (storage.empty()) {
+    return nullptr;
+  } else {
+    Tv *storage_ = new Tv[storage.size()];
+    int pointer = 0;
+    for (auto iter = storage.begin(); iter != storage.end(); ++iter) {
+      storage_[pointer] = (*iter);
+      ++pointer;
+    }
+    //记得留空白位。
+    storage_[pointer]=blank.Value_;
+    return storage_;
   }
+}
+
+template <typename Tk, typename Tv> Tv *Memory<Tk, Tv>::all() {
+  std::set<Tv> storage;
+  Atom blank;
+  Head *temp = new Head[num_of_heads + 1];
+  file.open(head_file, std::fstream::in | std::fstream::out);
+  if (!file) {
+    std::cerr << "Cannot open the file.\n";
+    return nullptr;
+  }
+  file.seekg(0);
+  file.read(reinterpret_cast<char *>(temp), num_of_heads * size_of_head);
+  file.close();
+  for (int i = 0; i < num_of_heads; ++i) {
+    Atom *place = new Atom[size_of_body];
+    Atom *flag = temp[i].all(body_file, *this, place);
+    for (auto iter = place; iter != flag; ++iter) {
+      storage.insert((*iter).Value_);
+    }
+    delete[] place;
+  }
+  delete[] temp;
+  Tv *storage_ = new Tv[storage.size() + 1];
   int pointer = 0;
   for (auto iter = storage.begin(); iter != storage.end(); ++iter) {
     storage_[pointer] = (*iter);
     ++pointer;
   }
+  storage_[pointer]=blank.Value_;
   return storage_;
 }
 

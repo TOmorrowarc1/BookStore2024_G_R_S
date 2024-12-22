@@ -1,5 +1,6 @@
-#ifndef T_O_K_E_N
-#define T_O_K_E_N
+#pragma once
+#ifndef TOKEN_HPP
+#define TOKEN_HPP
 
 #include <cstring>
 #include <iostream>

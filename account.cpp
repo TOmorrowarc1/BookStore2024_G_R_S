@@ -26,7 +26,9 @@ su [UserID] ([Password])?
 */
 
 #include "account.hpp"
+#include "String.cpp"
 #include "book.hpp"
+#include "tokenscanner.cpp"
 
 Account_system::Account_info::Account_info(const MyString &user_ID,
                                            const MyString &user_name,
@@ -253,7 +255,9 @@ void Account_system::sign_in(Token_scanner &order) {
 void Account_system::log_out() {
   if (!Account_record.empty()) {
     std::string user_id = Account_record.top().user_id().return_content();
-    Book_manage::selection.erase(user_id);
+    if(Book_manage::selection.find(user_id)!=Book_manage::selection.end()){
+      Book_manage::selection.erase(user_id);
+    }
     Account_record.pop();
     if (Account_record.empty()) {
       rank_now = 0;

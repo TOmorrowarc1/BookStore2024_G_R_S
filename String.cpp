@@ -5,7 +5,7 @@ MyString::MyString(const std::string &target) {
 }
 std::string MyString::return_content() {
   std::string result;
-  std::strcpy(&result[0], content);
+  result = content;
   return result;
 }
 bool MyString::operator>(const MyString &B) const {
@@ -61,7 +61,6 @@ MyString *MyString::words_split(char signal) {
       content_fix[i] = 0;
     }
   }
-  --flag;
   MyString *address = new MyString[flag + 1];
   for (int i = 0; i < flag; ++i) {
     std::string target;
@@ -69,6 +68,23 @@ MyString *MyString::words_split(char signal) {
     address[i] = target;
   }
   return address;
+}
+
+void MyString::delete_quote() {
+  char content_fix[65] = {0};
+  int flag = 0;
+  if (content[0] == '\"') {
+    for (int i = 1; content[i] != 0; ++i) {
+      content_fix[i - 1] = content[i];
+      ++flag;
+    }
+    --flag;
+  }
+  content_fix[flag] = 0;
+  for(int i=0;content[i]!=0;++i){
+    content[i]=content_fix[i];
+  }
+  return;
 }
 
 std::ostream &operator<<(std::ostream &output, const MyString &object) {

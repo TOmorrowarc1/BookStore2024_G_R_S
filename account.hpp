@@ -32,9 +32,7 @@ register [UserID] [Password] [Username]
 #include<cstring>
 #include"storage.hpp"
 #include"String.hpp"
-#include"String.cpp"
 #include"tokenscanner.hpp"
-#include"tokenscanner.cpp"
 
 namespace Account_system{
 
