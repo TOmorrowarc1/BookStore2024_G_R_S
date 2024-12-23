@@ -547,7 +547,8 @@ Tv *Memory<Tk, Tv>::list(const Tk &Key_, const Tv &min, const Tv &max) {
   }
 }
 
-template <typename Tk, typename Tv> Tv *Memory<Tk, Tv>::all() {
+template <typename Tk, typename Tv> 
+Tv *Memory<Tk, Tv>::all() {
   std::set<Tv> storage;
   Atom blank;
   Head *temp = new Head[num_of_heads + 1];

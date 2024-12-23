@@ -21,8 +21,6 @@ Token_scanner::Token_scanner(const std::string &target) {
 
 void Token_scanner::operator=(const std::string &target) {
   content = target;
-  content += "0";
-  content[content.length() - 1] = 0;
   totalnum = 0;
   pointer = 0;
   space[0][0] = 0;
@@ -60,15 +58,10 @@ void Token_scanner::operator=(const Token_scanner &target) {
 
 //返回pointer指向的字符并将pointer加1.
 std::string Token_scanner::next_token() {
-  std::string result;
   if (pointer >= totalnum) {
-    result += '\0';
-    return result;
+    return "\0";
   }
-  for (int i = space[pointer][0]; i <= space[pointer][1]; ++i) {
-    result += content[i];
-  }
-  result += '\0';
+  std::string result(&content[space[pointer][0]],&content[space[pointer][1] + 1]);
   ++pointer;
   return result;
 }
