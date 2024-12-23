@@ -55,11 +55,11 @@ public:
 //如何使用自定义类？
 std::unordered_map<std::string, Book> selection;
 
-Memory<MyString, Book> storage("ISBN_file", "Book_file", 1000);
-Memory<MyString, MyString> bookname_ISBN("bookname_file", "bookname_ISBN_file",
+Memory<MyString, Book> ISBN_book("ISBN_file", "Book_file", 1000);
+Memory<MyString, Book> bookname_book("bookname_file", "bookname_ISBN_file",
                                          1000);
-Memory<MyString, MyString> author_ISBN("author_file", "author_ISBN_file", 1000);
-Memory<MyString, MyString> keywords_ISBN("keywords_file", "keywords_ISBN_file",
+Memory<MyString, Book> author_book("author_file", "author_ISBN_file", 1000);
+Memory<MyString, Book> keywords_book("keywords_file", "keywords_ISBN_file",
                                          1000);
 
 void select(Token_scanner &);
