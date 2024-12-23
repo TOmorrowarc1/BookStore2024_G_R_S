@@ -96,12 +96,12 @@ void Book_manage::modify(Token_scanner &order) {
   for (int i = 0; i < order.count_string(); ++i) {
     std::string token = order.next_token();
     int equal = 1;
-    for (int i = 1;token[i - 1] != '='; ++i) {
+    for (int i = 1; token[i - 1] != '='; ++i) {
       ++equal;
     }
-    std::string type_string(&token[0],&token[equal]);
-    int distance=token.length();
-    std::string message(&token[equal],&token[distance]);
+    std::string type_string(&token[0], &token[equal]);
+    int distance = token.length();
+    std::string message(&token[equal], &token[distance]);
     if (type_string == "-ISBN=") {
       if (change[1] == 1) {
         std::cout << "Invalid.\n";
@@ -235,11 +235,11 @@ void Book_manage::show(Token_scanner &order) {
   for (int i = 0; i < order.count_string(); ++i) {
     std::string token = order.next_token();
     int equal = 1;
-    for (int i = 1;token[i - 1] != '='; ++i) {
+    for (int i = 1; token[i - 1] != '='; ++i) {
       ++equal;
     }
-    std::string type_string(&token[0],&token[equal]);
-    std::string message(&token[equal],&token[token.length()]);
+    std::string type_string(&token[0], &token[equal]);
+    std::string message(&token[equal], &token[token.length()]);
     if (type_string == "-ISBN=") {
       if (index[1] == 1) {
         std::cout << "Invalid.\n";
@@ -429,6 +429,12 @@ void Book_manage::sell(Token_scanner &order) {
       selection[user_id] == target) {
     selection[user_id] = target;
   }
+  //日志系统：储存增量。
+  Diary_system::Trade new_trade(Diary_system::count, num * target.price,
+                                blank_string, target.ISBN_, -num);
+  Diary_system::Diary_storage.insert(
+      Diary_system::Diary_storage.create(0, new_trade));
+  ++Diary_system::count;
   return;
 }
 
@@ -446,7 +452,7 @@ void Book_manage::import(Token_scanner &order) {
   }
   Book target = selection[user_id];
   std::string quantity, totalcost;
-  int num_quantity = 0;
+  int num_quantity = 0, cost = 0;
   quantity = order.next_token();
   totalcost = order.next_token();
   for (int i = 0; quantity[i] != 0; ++i) {
@@ -455,7 +461,8 @@ void Book_manage::import(Token_scanner &order) {
       return;
     }
   }
-  num_quantity = atoi(&quantity[0]);
+  num_quantity = std::atoi(&quantity[0]);
+  cost = std::atof(&totalcost[0]);
   for (int i = 0; totalcost[i] != 0; ++i) {
     if ((totalcost[i] < '0' || totalcost[i] > '9') && totalcost[i] != '.') {
       std::cout << "Invalid\n";
@@ -477,5 +484,11 @@ void Book_manage::import(Token_scanner &order) {
   }
   delete[] catcher;
   selection[user_id] = target;
+  //日志系统：储存增量。
+  Diary_system::Trade new_trade(Diary_system::count, -cost, blank_string,
+                                target.ISBN_, num_quantity);
+  Diary_system::Diary_storage.insert(
+      Diary_system::Diary_storage.create(0, new_trade));
+  ++Diary_system::count;
   return;
 }
