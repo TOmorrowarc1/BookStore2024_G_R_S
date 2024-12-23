@@ -52,7 +52,7 @@ public:
   friend void import(Token_scanner &);
 };
 
-//如何使用自定义类？
+
 std::unordered_map<std::string, Book> selection;
 
 Memory<MyString, Book> ISBN_book("ISBN_file", "Book_file", 1000);

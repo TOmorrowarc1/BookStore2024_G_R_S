@@ -95,16 +95,13 @@ void Book_manage::modify(Token_scanner &order) {
   //读取对应信息方法：锁定=.
   for (int i = 0; i < order.count_string(); ++i) {
     std::string token = order.next_token();
-    std::string type_string, message;
-    char type[10] = {0};
-    for (int words = 0;; ++words) {
-      if (token[words - 1] == '=') {
-        type_string = type;
-        message = (&token[words]);
-        break;
-      }
-      type[words] = token[words];
+    int equal = 1;
+    for (int i = 1;token[i - 1] != '='; ++i) {
+      ++equal;
     }
+    std::string type_string(&token[0],&token[equal]);
+    int distance=token.length();
+    std::string message(&token[equal],&token[distance]);
     if (type_string == "-ISBN=") {
       if (change[1] == 1) {
         std::cout << "Invalid.\n";
@@ -143,6 +140,9 @@ void Book_manage::modify(Token_scanner &order) {
       }
       change[5] = 1;
       Price = std::atof(&message[0]);
+    } else {
+      std::cout << "Invalid.\n";
+      return;
     }
   }
   //以上为输入部分，接下来修改对应文件。
@@ -207,12 +207,15 @@ void Book_manage::modify(Token_scanner &order) {
 }
 
 void Book_manage::show(Token_scanner &order) {
+  bool index[5] = {0};
+  MyString ISBN, Book_name, Author, Keywords, blank_string;
+  MyString max_string("~~~~~~~~~");
+  double Price = 0;
   if (Account_system::rank_now == 0) {
     std::cout << "Invalid.\n";
     return;
   }
   if (order.count_string() == 0) {
-    MyString blank_string;
     Book blank;
     Book *all = ISBN_book.all();
     for (int i = 0; all[i] != blank; ++i) {
@@ -221,158 +224,153 @@ void Book_manage::show(Token_scanner &order) {
                 << std::fixed << std::setprecision(2) << all[i].price << '\t'
                 << all[i].num_storage << '\n';
     }
-  } else {
-    bool index[5] = {0};
-    MyString ISBN, Book_name, Author, Keywords, blank_string, max_string("~~~");
-    Book blank_book;
-    Book max_book(max_string, blank_string, blank_string, blank_string, 0, 0);
-    double Price = 0;
-    if (order.count_string() == 0 || Account_system::rank_now == 0) {
+    delete[] all;
+    return;
+  }
+  if (order.count_string() == 0 || Account_system::rank_now == 0) {
+    std::cout << "Invalid.\n";
+    return;
+  }
+  //读取对应信息方法：锁定=.
+  for (int i = 0; i < order.count_string(); ++i) {
+    std::string token = order.next_token();
+    int equal = 1;
+    for (int i = 1;token[i - 1] != '='; ++i) {
+      ++equal;
+    }
+    std::string type_string(&token[0],&token[equal]);
+    std::string message(&token[equal],&token[token.length()]);
+    if (type_string == "-ISBN=") {
+      if (index[1] == 1) {
+        std::cout << "Invalid.\n";
+        return;
+      }
+      index[1] = 1;
+      ISBN = message;
+    } else if (type_string == "-name=") {
+      if (index[2] == 1) {
+        std::cout << "Invalid.\n";
+        return;
+      }
+      index[2] = 1;
+      Book_name = message;
+      Book_name.delete_quote();
+    } else if (type_string == "-author=") {
+      if (index[3] == 1) {
+        std::cout << "Invalid.\n";
+        return;
+      }
+      index[3] = 1;
+      Author = message;
+      Author.delete_quote();
+    } else if (type_string == "-keyword=") {
+      if (index[4] == 1) {
+        std::cout << "Invalid.\n";
+        return;
+      }
+      index[4] = 1;
+      Keywords = message;
+      Keywords.delete_quote();
+    } else {
       std::cout << "Invalid.\n";
       return;
     }
-    //读取对应信息方法：锁定=.
-    for (int i = 0; i < order.count_string(); ++i) {
-      std::string token_1 = order.next_token();
-      std::string type_string_1, message_1;
-      char type[10] = {0};
-      for (int words = 0;; ++words) {
-        if (token_1[words - 1] == '=') {
-          type_string_1 = type;
-          message_1 = (&token_1[words]);
-          break;
-        }
-        type[words] = token_1[words];
-      }
-      if (type_string_1 == "-ISBN=") {
-        if (index[1] == 1) {
-          std::cout << "Invalid.\n";
-          return;
-        }
-        index[1] = 1;
-        ISBN = message_1;
-      } else if (type_string_1 == "-name=") {
-        if (index[2] == 1) {
-          std::cout << "Invalid.\n";
-          return;
-        }
-        index[2] = 1;
-        Book_name = message_1;
-        Book_name.delete_quote();
-      } else if (type_string_1 == "-author=") {
-        if (index[3] == 1) {
-          std::cout << "Invalid.\n";
-          return;
-        }
-        index[3] = 1;
-        Author = message_1;
-        Author.delete_quote();
-      } else if (type_string_1 == "-keyword=") {
-        if (index[4] == 1) {
-          std::cout << "Invalid.\n";
-          return;
-        }
-        index[4] = 1;
-        Keywords = message_1;
-        Keywords.delete_quote();
-      } else {
-        std::cout << "Invalid.\n";
-        return;
-      }
+  }
+  //信息读取完毕，接下来开始查找,取各存在组之间的交集。
+  Book blank_book;
+  Book max_book(max_string, blank_string, blank_string, blank_string, 0, 0);
+  std::set<Book> targets_exist;
+  std::set<Book> targets_temp;
+  bool flag = 0;
+  if (index[1]) {
+    flag = 1;
+    Book target = ISBN_book.search(ISBN, blank_book);
+    if (target.ISBN_ == ISBN) {
+      targets_exist.insert(target);
     }
-    //信息读取完毕，接下来开始查找,取各存在组之间的交集。
-    std::set<Book> targets_exist;
-    std::set<Book> targets_temp;
-    bool flag = 0;
-    if (index[1]) {
+  }
+  if (index[2]) {
+    Book *possi = bookname_book.list(Book_name, blank_book, max_book);
+    if (possi == nullptr) {
       flag = 1;
-      Book target = ISBN_book.search(ISBN, blank_book);
-      if (target.ISBN_ == ISBN) {
-        targets_exist.insert(target);
+      targets_exist.clear();
+    } else if (flag == 1) {
+      for (int i = 0; possi[i] != blank_book; ++i) {
+        if (targets_exist.count(possi[i])) {
+          targets_temp.insert(possi[i]);
+        }
+      }
+      targets_exist.clear();
+      for (auto iter = targets_temp.begin(); iter != targets_temp.end();
+           ++iter) {
+        targets_exist.insert(*iter);
+      }
+    } else {
+      flag = 1;
+      for (int i = 0; possi[i] != blank_book; ++i) {
+        targets_exist.insert(possi[i]);
       }
     }
-    if (index[2]) {
-      Book *possi = bookname_book.list(Book_name, blank_book, max_book);
-      if (possi == nullptr) {
-        flag = 1;
-        targets_exist.clear();
-      } else if (flag == 1) {
-        for (int i = 0; possi[i] != blank_book; ++i) {
-          if (targets_exist.count(possi[i])) {
-            targets_temp.insert(possi[i]);
-          }
-        }
-        targets_exist.clear();
-        for (auto iter = targets_temp.begin(); iter != targets_temp.end();
-             ++iter) {
-          targets_exist.insert(*iter);
-        }
-      } else {
-        flag = 1;
-        for (int i = 0; possi[i] != blank_book; ++i) {
-          targets_exist.insert(possi[i]);
+    delete[] possi;
+  }
+  if (index[3]) {
+    Book *possi = author_book.list(Author, blank_book, max_book);
+    if (possi == nullptr) {
+      flag = 1;
+      targets_exist.clear();
+    } else if (flag == 1) {
+      for (int i = 0; possi[i] != blank_book; ++i) {
+        if (targets_exist.count(possi[i])) {
+          targets_temp.insert(possi[i]);
         }
       }
-      delete[] possi;
+      targets_exist.clear();
+      for (auto iter = targets_temp.begin(); iter != targets_temp.end();
+           ++iter) {
+        targets_exist.insert(*iter);
+      }
+    } else {
+      flag = 1;
+      for (int i = 0; possi[i] != blank_book; ++i) {
+        targets_exist.insert(possi[i]);
+      }
     }
-    if (index[3]) {
-      Book *possi = author_book.list(Author, blank_book, max_book);
-      if (possi == nullptr) {
-        flag = 1;
-        targets_exist.clear();
-      } else if (flag == 1) {
-        for (int i = 0; possi[i] != blank_book; ++i) {
-          if (targets_exist.count(possi[i])) {
-            targets_temp.insert(possi[i]);
-          }
-        }
-        targets_exist.clear();
-        for (auto iter = targets_temp.begin(); iter != targets_temp.end();
-             ++iter) {
-          targets_exist.insert(*iter);
-        }
-      } else {
-        flag = 1;
-        for (int i = 0; possi[i] != blank_book; ++i) {
-          targets_exist.insert(possi[i]);
-        }
-      }
-      delete[] possi;
-    }
-    if (index[4]) {
-      MyString *keys = Keywords.words_split('|');
-      if (keys[1] != blank_string) {
-        delete[] keys;
-        std::cout << "Invalid.\n";
-        return;
-      }
-      Book *possi = keywords_book.list(keys[0], blank_book, max_book);
+    delete[] possi;
+  }
+  if (index[4]) {
+    MyString *keys = Keywords.words_split('|');
+    if (keys[1] != blank_string) {
       delete[] keys;
-      if (possi == nullptr) {
-        flag = 1;
-        targets_exist.clear();
-      } else if (flag == 1) {
-        for (int i = 0; possi[i] != blank_book; ++i) {
-          if (targets_exist.count(possi[i])) {
-            targets_temp.insert(possi[i]);
-          }
-        }
-        targets_exist.clear();
-        for (auto iter = targets_temp.begin(); iter != targets_temp.end();
-             ++iter) {
-          targets_exist.insert(*iter);
-        }
-      } else {
-        flag = 1;
-        for (int i = 0; possi[i] != blank_book; ++i) {
-          targets_exist.insert(possi[i]);
+      std::cout << "Invalid.\n";
+      return;
+    }
+    Book *possi = keywords_book.list(keys[0], blank_book, max_book);
+    delete[] keys;
+    if (possi == nullptr) {
+      flag = 1;
+      targets_exist.clear();
+    } else if (flag == 1) {
+      for (int i = 0; possi[i] != blank_book; ++i) {
+        if (targets_exist.count(possi[i])) {
+          targets_temp.insert(possi[i]);
         }
       }
-      delete[] possi;
+      targets_exist.clear();
+      for (auto iter = targets_temp.begin(); iter != targets_temp.end();
+           ++iter) {
+        targets_exist.insert(*iter);
+      }
+    } else {
+      flag = 1;
+      for (int i = 0; possi[i] != blank_book; ++i) {
+        targets_exist.insert(possi[i]);
+      }
     }
-    if (targets_exist.empty()) {
-      std::cout << '\n';
-    }
+    delete[] possi;
+  }
+  if (targets_exist.empty()) {
+    std::cout << '\n';
+  } else {
     for (auto iter = targets_exist.begin(); iter != targets_exist.end();
          ++iter) {
       std::cout << (*iter).ISBN_ << '\t' << (*iter).Book_name_ << '\t'
@@ -412,8 +410,25 @@ void Book_manage::sell(Token_scanner &order) {
   std::cout << std::fixed << std::setprecision(2) << (num * target.price)
             << '\n';
   target.num_storage -= num;
+  MyString blank_string;
   ISBN_book.erase(ISBN_book.create(ISBN, target));
   ISBN_book.insert(ISBN_book.create(ISBN, target));
+  bookname_book.erase(bookname_book.create(target.Book_name_, target));
+  bookname_book.insert(bookname_book.create(target.Book_name_, target));
+  author_book.erase(author_book.create(target.Author_, target));
+  author_book.insert(author_book.create(target.Author_, target));
+  MyString *catcher = target.Key_string.words_split('|');
+  for (int i = 0; catcher[i] != blank_string; ++i) {
+    keywords_book.erase(keywords_book.create(catcher[i], target));
+    keywords_book.insert(keywords_book.create(catcher[i], target));
+  }
+  delete[] catcher;
+  MyString User_ID = Account_system::Account_record.top().user_id();
+  std::string user_id = User_ID.return_content();
+  if (selection.find(user_id) != selection.end() &&
+      selection[user_id] == target) {
+    selection[user_id] = target;
+  }
   return;
 }
 
@@ -429,7 +444,7 @@ void Book_manage::import(Token_scanner &order) {
     std::cout << "Invalid\n";
     return;
   }
-  Book origin = selection[user_id];
+  Book target = selection[user_id];
   std::string quantity, totalcost;
   int num_quantity = 0;
   quantity = order.next_token();
@@ -447,8 +462,20 @@ void Book_manage::import(Token_scanner &order) {
       return;
     }
   }
-  origin.num_storage += num_quantity;
-  ISBN_book.erase(ISBN_book.create(origin.ISBN_, origin));
-  ISBN_book.insert(ISBN_book.create(origin.ISBN_, origin));
+  target.num_storage += num_quantity;
+  MyString blank_string;
+  ISBN_book.erase(ISBN_book.create(target.ISBN_, target));
+  ISBN_book.insert(ISBN_book.create(target.ISBN_, target));
+  bookname_book.erase(bookname_book.create(target.Book_name_, target));
+  bookname_book.insert(bookname_book.create(target.Book_name_, target));
+  author_book.erase(author_book.create(target.Author_, target));
+  author_book.insert(author_book.create(target.Author_, target));
+  MyString *catcher = target.Key_string.words_split('|');
+  for (int i = 0; catcher[i] != blank_string; ++i) {
+    keywords_book.erase(keywords_book.create(catcher[i], target));
+    keywords_book.insert(keywords_book.create(catcher[i], target));
+  }
+  delete[] catcher;
+  selection[user_id] = target;
   return;
 }
