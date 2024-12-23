@@ -6,8 +6,6 @@
 #include "tokenscanner.hpp"
 #include <unordered_map>
 
-class MyString;
-class Token_scanner;
 
 /*在书籍管理系统中，本程序实现如下功能：
 1.实现Book类，储存一本书籍相关信息：ISBN，书名，作者名，关键词，库存书籍数量，单价。

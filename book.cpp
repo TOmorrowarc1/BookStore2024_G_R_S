@@ -1,8 +1,8 @@
-//用于字符串转浮点数。
 #include "book.hpp"
 #include "String.hpp"
 #include "account.cpp"
 #include "account.hpp"
+#include "diary.hpp"
 #include <iomanip>
 #include <set>
 #include <stdlib.h>
