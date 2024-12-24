@@ -535,7 +535,7 @@ Tv *Memory<Tk, Tv>::list(const Tk &Key_, const Tv &min, const Tv &max) {
   if (storage.empty()) {
     return nullptr;
   } else {
-    Tv *storage_ = new Tv[storage.size()];
+    Tv *storage_ = new Tv[storage.size() + 1];
     int pointer = 0;
     for (auto iter = storage.begin(); iter != storage.end(); ++iter) {
       storage_[pointer] = (*iter);
