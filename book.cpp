@@ -1,8 +1,9 @@
-//用于字符串转浮点数。
 #include "book.hpp"
 #include "String.hpp"
 #include "account.cpp"
 #include "account.hpp"
+#include "diary.cpp"
+#include "diary.hpp"
 #include <iomanip>
 #include <set>
 #include <stdlib.h>
@@ -64,20 +65,19 @@ bool Book_manage::Book::operator<=(const Book &B) const {
 // 1.选中对应图书：
 void Book_manage::select(Token_scanner &order) {
   if (order.count_string() != 1 || Account_system::rank_now < 3) {
-    std::cout << "Invalid.\n";
+    std::cout << "Invalid\n";
     return;
   }
   MyString ISBN = order.next_token();
   MyString User_ID = Account_system::Account_record.top().user_id();
-  std::string user_id = User_ID.return_content();
   Book blank, target;
   target = ISBN_book.search(ISBN, blank);
   if (target.ISBN_ != ISBN) {
     blank.ISBN_ = ISBN;
     ISBN_book.insert(ISBN_book.create(ISBN, blank));
-    selection[user_id] = blank;
+    selection[User_ID] = blank;
   } else {
-    selection[user_id] = target;
+    selection[User_ID] = target;
   }
   return;
 }
@@ -87,29 +87,38 @@ void Book_manage::modify(Token_scanner &order) {
   bool change[6] = {0};
   MyString ISBN, Book_name, Author, Keywords, blank_string;
   MyString max_string("~~~~~~~~~");
+  MyString isbn("-ISBN=");
+  MyString name("-name=");
+  MyString author("-author=");
+  MyString keywords("-keyword=");
+  MyString price("-price=");
+  Book blank;
   double Price = 0;
   if (order.count_string() == 0 || Account_system::rank_now < 3) {
-    std::cout << "Invalid.\n";
+    std::cout << "Invalid\n";
     return;
   }
   //读取对应信息方法：锁定=.
   for (int i = 0; i < order.count_string(); ++i) {
-    std::string token = order.next_token();
-    int equal = 1;
-    for (int i = 1;token[i - 1] != '='; ++i) {
+    MyString token = order.next_token();
+    int equal = 1, end = 0;
+    for (int i = 1; token[i - 1] != '='; ++i) {
       ++equal;
     }
-    std::string type_string(&token[0],&token[equal]);
-    int distance=token.length();
-    std::string message(&token[equal],&token[distance]);
-    if (type_string == "-ISBN=") {
+    MyString type_string(token, 0, equal);
+    end = equal;
+    while (token[end] != 0) {
+      ++end;
+    }
+    MyString message(token, equal, end);
+    if (type_string == isbn) {
       if (change[1] == 1) {
-        std::cout << "Invalid.\n";
+        std::cout << "Invalid\n";
         return;
       }
       change[1] = 1;
       ISBN = message;
-    } else if (type_string == "-name=") {
+    } else if (type_string == name) {
       if (change[2] == 1) {
         std::cout << "Invalid.\n";
         return;
@@ -117,51 +126,55 @@ void Book_manage::modify(Token_scanner &order) {
       change[2] = 1;
       Book_name = message;
       Book_name.delete_quote();
-    } else if (type_string == "-author=") {
+    } else if (type_string == author) {
       if (change[3] == 1) {
-        std::cout << "Invalid.\n";
+        std::cout << "Invalid\n";
         return;
       }
       change[3] = 1;
       Author = message;
       Author.delete_quote();
-    } else if (type_string == "-keyword=") {
+    } else if (type_string == keywords) {
       if (change[4] == 1) {
-        std::cout << "Invalid.\n";
+        std::cout << "Invalid\n";
         return;
       }
       change[4] = 1;
       Keywords = message;
       Keywords.delete_quote();
-    } else if (type_string == "-price=") {
+    } else if (type_string == price) {
       if (change[5] == 1) {
-        std::cout << "Invalid.\n";
+        std::cout << "Invalid\n";
         return;
       }
       change[5] = 1;
       Price = std::atof(&message[0]);
     } else {
-      std::cout << "Invalid.\n";
+      std::cout << "Invalid\n";
       return;
     }
   }
   //以上为输入部分，接下来修改对应文件。
   MyString User_ID = Account_system::Account_record.top().user_id();
-  std::string user_id = User_ID.return_content();
   //找出原来书籍信息。
-  if (selection.find(user_id) == selection.end()) {
-    std::cout << "Invalid.\n";
+  if (selection.find(User_ID) == selection.end()) {
+    std::cout << "Invalid\n";
     return;
   }
-  Book origin = selection[user_id];
+  Book origin = selection[User_ID];
   Book now(origin);
   //根据输入内容修改本书信息。
   if (change[1]) {
     if (ISBN == origin.ISBN_) {
-      std::cout << "Invalid.\n";
+      std::cout << "Invalid\n";
       return;
     }
     now.ISBN_ = ISBN;
+    Book judge = ISBN_book.search(ISBN, blank);
+    if (judge.ISBN_ == ISBN) {
+      std::cout << "Invalid\n";
+      return;
+    }
   }
   if (change[2]) {
     now.Book_name_ = Book_name;
@@ -175,7 +188,7 @@ void Book_manage::modify(Token_scanner &order) {
       for (int j = i + 1; check[j] != blank_string; ++j) {
         if (check[i] == check[j]) {
           delete[] check;
-          std::cout << "Invalid.\n";
+          std::cout << "Invalid\n";
           return;
         }
       }
@@ -202,17 +215,21 @@ void Book_manage::modify(Token_scanner &order) {
   }
   delete[] catcher_1;
   delete[] catcher_2;
-  selection[user_id] = now;
+  selection[User_ID] = now;
   return;
 }
 
 void Book_manage::show(Token_scanner &order) {
-  bool index[5] = {0};
   MyString ISBN, Book_name, Author, Keywords, blank_string;
   MyString max_string("~~~~~~~~~");
+  MyString isbn("-ISBN=");
+  MyString name("-name=");
+  MyString author("-author=");
+  MyString keywords("-keyword=");
+  MyString price("-price=");
   double Price = 0;
   if (Account_system::rank_now == 0) {
-    std::cout << "Invalid.\n";
+    std::cout << "Invalid\n";
     return;
   }
   if (order.count_string() == 0) {
@@ -227,158 +244,78 @@ void Book_manage::show(Token_scanner &order) {
     delete[] all;
     return;
   }
-  if (order.count_string() == 0 || Account_system::rank_now == 0) {
-    std::cout << "Invalid.\n";
+  if (order.count_string() != 1) {
+    std::cout << "Invalid\n";
     return;
   }
   //读取对应信息方法：锁定=.
-  for (int i = 0; i < order.count_string(); ++i) {
-    std::string token = order.next_token();
-    int equal = 1;
-    for (int i = 1;token[i - 1] != '='; ++i) {
-      ++equal;
-    }
-    std::string type_string(&token[0],&token[equal]);
-    std::string message(&token[equal],&token[token.length()]);
-    if (type_string == "-ISBN=") {
-      if (index[1] == 1) {
-        std::cout << "Invalid.\n";
-        return;
-      }
-      index[1] = 1;
-      ISBN = message;
-    } else if (type_string == "-name=") {
-      if (index[2] == 1) {
-        std::cout << "Invalid.\n";
-        return;
-      }
-      index[2] = 1;
-      Book_name = message;
-      Book_name.delete_quote();
-    } else if (type_string == "-author=") {
-      if (index[3] == 1) {
-        std::cout << "Invalid.\n";
-        return;
-      }
-      index[3] = 1;
-      Author = message;
-      Author.delete_quote();
-    } else if (type_string == "-keyword=") {
-      if (index[4] == 1) {
-        std::cout << "Invalid.\n";
-        return;
-      }
-      index[4] = 1;
-      Keywords = message;
-      Keywords.delete_quote();
-    } else {
-      std::cout << "Invalid.\n";
-      return;
-    }
+  MyString token = order.next_token();
+  int equal = 1, end = 0;
+  for (int i = 1; token[i - 1] != '='; ++i) {
+    ++equal;
+  }
+  MyString type_string(token, 0, equal);
+  end = equal;
+  while (token[end] != 0) {
+    ++end;
+  }
+  MyString message(token, equal, end);
+  if (type_string == isbn) {
+    ISBN = message;
+  } else if (type_string == name) {
+    Book_name = message;
+    Book_name.delete_quote();
+  } else if (type_string == author) {
+    Author = message;
+    Author.delete_quote();
+  } else if (type_string == keywords) {
+    Keywords = message;
+    Keywords.delete_quote();
+  } else {
+    std::cout << "Invalid\n";
+    return;
   }
   //信息读取完毕，接下来开始查找,取各存在组之间的交集。
   Book blank_book;
+  Book *possi = nullptr;
   Book max_book(max_string, blank_string, blank_string, blank_string, 0, 0);
-  std::set<Book> targets_exist;
-  std::set<Book> targets_temp;
-  bool flag = 0;
-  if (index[1]) {
-    flag = 1;
+  if (type_string == isbn) {
     Book target = ISBN_book.search(ISBN, blank_book);
-    if (target.ISBN_ == ISBN) {
-      targets_exist.insert(target);
-    }
-  }
-  if (index[2]) {
-    Book *possi = bookname_book.list(Book_name, blank_book, max_book);
-    if (possi == nullptr) {
-      flag = 1;
-      targets_exist.clear();
-    } else if (flag == 1) {
-      for (int i = 0; possi[i] != blank_book; ++i) {
-        if (targets_exist.count(possi[i])) {
-          targets_temp.insert(possi[i]);
-        }
-      }
-      targets_exist.clear();
-      for (auto iter = targets_temp.begin(); iter != targets_temp.end();
-           ++iter) {
-        targets_exist.insert(*iter);
-      }
+    if (target.ISBN_ != ISBN) {
+      std::cout << '\n';
+      return;
     } else {
-      flag = 1;
-      for (int i = 0; possi[i] != blank_book; ++i) {
-        targets_exist.insert(possi[i]);
-      }
+      std::cout << target.ISBN_ << '\t' << target.Book_name_ << '\t'
+                << target.Author_ << '\t' << target.Key_string << '\t'
+                << std::fixed << std::setprecision(2) << target.price << '\t'
+                << target.num_storage << '\n';
+      return;
     }
-    delete[] possi;
-  }
-  if (index[3]) {
-    Book *possi = author_book.list(Author, blank_book, max_book);
-    if (possi == nullptr) {
-      flag = 1;
-      targets_exist.clear();
-    } else if (flag == 1) {
-      for (int i = 0; possi[i] != blank_book; ++i) {
-        if (targets_exist.count(possi[i])) {
-          targets_temp.insert(possi[i]);
-        }
-      }
-      targets_exist.clear();
-      for (auto iter = targets_temp.begin(); iter != targets_temp.end();
-           ++iter) {
-        targets_exist.insert(*iter);
-      }
-    } else {
-      flag = 1;
-      for (int i = 0; possi[i] != blank_book; ++i) {
-        targets_exist.insert(possi[i]);
-      }
-    }
-    delete[] possi;
-  }
-  if (index[4]) {
+  } else if (type_string == name) {
+    possi = bookname_book.list(Book_name, blank_book, max_book);
+  } else if (type_string == author) {
+    possi = author_book.list(Author, blank_book, max_book);
+  } else if (type_string == keywords) {
     MyString *keys = Keywords.words_split('|');
     if (keys[1] != blank_string) {
       delete[] keys;
-      std::cout << "Invalid.\n";
+      std::cout << "Invalid\n";
       return;
     }
-    Book *possi = keywords_book.list(keys[0], blank_book, max_book);
+    possi = keywords_book.list(keys[0], blank_book, max_book);
     delete[] keys;
-    if (possi == nullptr) {
-      flag = 1;
-      targets_exist.clear();
-    } else if (flag == 1) {
-      for (int i = 0; possi[i] != blank_book; ++i) {
-        if (targets_exist.count(possi[i])) {
-          targets_temp.insert(possi[i]);
-        }
-      }
-      targets_exist.clear();
-      for (auto iter = targets_temp.begin(); iter != targets_temp.end();
-           ++iter) {
-        targets_exist.insert(*iter);
-      }
-    } else {
-      flag = 1;
-      for (int i = 0; possi[i] != blank_book; ++i) {
-        targets_exist.insert(possi[i]);
-      }
-    }
-    delete[] possi;
   }
-  if (targets_exist.empty()) {
+  if (possi == nullptr) {
     std::cout << '\n';
   } else {
-    for (auto iter = targets_exist.begin(); iter != targets_exist.end();
-         ++iter) {
-      std::cout << (*iter).ISBN_ << '\t' << (*iter).Book_name_ << '\t'
-                << (*iter).Author_ << '\t' << (*iter).Key_string << '\t'
-                << std::fixed << std::setprecision(2) << (*iter).price << '\t'
-                << (*iter).num_storage << '\n';
+    for (int i = 0; possi[i] != blank_book; ++i) {
+      std::cout << possi[i].ISBN_ << '\t' << possi[i].Book_name_ << '\t'
+                << possi[i].Author_ << '\t' << possi[i].Key_string << '\t'
+                << std::fixed << std::setprecision(2) << possi[i].price << '\t'
+                << possi[i].num_storage << '\n';
     }
   }
+  delete[] possi;
   return;
 }
 
@@ -387,10 +324,9 @@ void Book_manage::sell(Token_scanner &order) {
     std::cout << "Invalid\n";
     return;
   }
-  MyString ISBN;
-  std::string number;
+  MyString ISBN = order.next_token();
+  MyString number = order.next_token();
   Book blank;
-  ISBN = order.next_token();
   Book target = ISBN_book.search(ISBN, blank);
   if (target.ISBN_ != ISBN) {
     std::cout << "Invalid\n";
@@ -403,7 +339,7 @@ void Book_manage::sell(Token_scanner &order) {
     }
   }
   int num = std::atoi(&number[0]);
-  if (num > target.num_storage) {
+  if (num > target.num_storage || num == 0) {
     std::cout << "Invalid\n";
     return;
   }
@@ -424,11 +360,16 @@ void Book_manage::sell(Token_scanner &order) {
   }
   delete[] catcher;
   MyString User_ID = Account_system::Account_record.top().user_id();
-  std::string user_id = User_ID.return_content();
-  if (selection.find(user_id) != selection.end() &&
-      selection[user_id] == target) {
-    selection[user_id] = target;
+  if (selection.find(User_ID) != selection.end() &&
+      selection[User_ID] == target) {
+    selection[User_ID] = target;
   }
+  //日志系统：储存增量。
+  Diary_system::Trade new_trade(Diary_system::count, num * target.price,
+                                blank_string, target.ISBN_, -num);
+  Diary_system::Diary_storage.insert(
+      Diary_system::Diary_storage.create(0, new_trade));
+  ++Diary_system::count;
   return;
 }
 
@@ -438,15 +379,15 @@ void Book_manage::import(Token_scanner &order) {
     return;
   }
   MyString User_ID = Account_system::Account_record.top().user_id();
-  std::string user_id = User_ID.return_content();
   //找出原来书籍信息。
-  if (selection.find(user_id) == selection.end()) {
+  if (selection.find(User_ID) == selection.end()) {
     std::cout << "Invalid\n";
     return;
   }
-  Book target = selection[user_id];
-  std::string quantity, totalcost;
+  Book target = selection[User_ID];
+  MyString quantity, totalcost;
   int num_quantity = 0;
+  double cost = 0;
   quantity = order.next_token();
   totalcost = order.next_token();
   for (int i = 0; quantity[i] != 0; ++i) {
@@ -455,12 +396,21 @@ void Book_manage::import(Token_scanner &order) {
       return;
     }
   }
-  num_quantity = atoi(&quantity[0]);
+  num_quantity = std::atoi(&quantity[0]);
+  if (num_quantity == 0) {
+    std::cout << "Invalid\n";
+    return;
+  }
   for (int i = 0; totalcost[i] != 0; ++i) {
     if ((totalcost[i] < '0' || totalcost[i] > '9') && totalcost[i] != '.') {
       std::cout << "Invalid\n";
       return;
     }
+  }
+  cost = std::atof(&totalcost[0]);
+  if (cost == 0) {
+    std::cout << "Invalid\n";
+    return;
   }
   target.num_storage += num_quantity;
   MyString blank_string;
@@ -476,6 +426,12 @@ void Book_manage::import(Token_scanner &order) {
     keywords_book.insert(keywords_book.create(catcher[i], target));
   }
   delete[] catcher;
-  selection[user_id] = target;
+  selection[User_ID] = target;
+  //日志系统：储存增量。
+  Diary_system::Trade new_trade(Diary_system::count, -cost, blank_string,
+                                target.ISBN_, num_quantity);
+  Diary_system::Diary_storage.insert(
+      Diary_system::Diary_storage.create(0, new_trade));
+  ++Diary_system::count;
   return;
 }

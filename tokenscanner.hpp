@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 
+class MyString;
 class Token_scanner {
 private:
   std::string content;
@@ -21,7 +22,7 @@ public:
   Token_scanner(const Token_scanner &target);
   void operator=(const Token_scanner &target);
   //返回pointer指向的字符并将pointer加1.
-  std::string next_token();
+  MyString next_token();
   //令pointer返回上一个字符串起始。
   void move_back();
   //返回储存字符串的数量。
