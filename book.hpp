@@ -4,7 +4,7 @@
 #include "String.hpp"
 #include "storage.hpp"
 #include "tokenscanner.hpp"
-#include <unordered_map>
+#include <map>
 
 
 /*在书籍管理系统中，本程序实现如下功能：
@@ -51,7 +51,7 @@ public:
 };
 
 
-std::unordered_map<std::string, Book> selection;
+std::map<MyString, Book> selection;
 
 Memory<MyString, Book> ISBN_book("ISBN_file", "Book_file", 1000);
 Memory<MyString, Book> bookname_book("bookname_file", "bookname_ISBN_file",

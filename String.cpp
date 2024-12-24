@@ -3,11 +3,27 @@
 MyString::MyString(const std::string &target) {
   std::strcpy(content, &target[0]);
 }
+
+MyString::MyString(const MyString &target, int start, int end) {
+  for (int i = start; i < end; ++i) {
+    content[i - start] = target.content[i];
+  }
+}
+
+MyString::MyString(const std::string &target, int start, int end) {
+  for (int i = start; i < end; ++i) {
+    content[i - start] = target[i];
+  }
+}
+
 std::string MyString::return_content() {
   std::string result;
   result = content;
   return result;
 }
+
+char& MyString::operator[](int place) { return content[place]; }
+
 bool MyString::operator>(const MyString &B) const {
   int result = std::strcmp((*this).content, B.content);
   return result > 0;
@@ -47,6 +63,26 @@ void MyString::operator=(const std::string &B) {
   return;
 }
 
+void MyString::change(const MyString &target, int start, int end) {
+  for (int i = start; i < end; ++i) {
+    content[i - start] = target.content[i];
+  }
+  for (int i = end - start; content[i] != 0; ++i) {
+    content[i] = 0;
+  }
+  return;
+}
+
+void MyString::change(const std::string &target, int start, int end) {
+  for (int i = start; i < end; ++i) {
+    content[i - start] = target[i];
+  }
+  for (int i = end - start; content[i] != 0; ++i) {
+    content[i] = 0;
+  }
+  return;
+}
+
 MyString *MyString::words_split(char signal) {
   int sign_place[10] = {0};
   char content_fix[65] = {0};
@@ -81,8 +117,8 @@ void MyString::delete_quote() {
     --flag;
   }
   content_fix[flag] = 0;
-  for(int i=0;content[i]!=0;++i){
-    content[i]=content_fix[i];
+  for (int i = 0; content[i] != 0; ++i) {
+    content[i] = content_fix[i];
   }
   return;
 }

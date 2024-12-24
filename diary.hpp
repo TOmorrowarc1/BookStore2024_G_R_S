@@ -28,7 +28,7 @@ private:
   int Stock_change_;
 
 public:
-  Trade() = default;
+  Trade();
   Trade(int, double, const MyString &, const MyString &, int);
   Trade(const Trade &);
   void operator=(const Trade &);

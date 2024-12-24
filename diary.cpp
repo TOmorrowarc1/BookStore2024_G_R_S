@@ -6,6 +6,12 @@
 #include <iostream>
 #include <stdlib.h>
 
+Diary_system::Trade::Trade() {
+  Count_number_ = 0;
+  Profit_ = 0;
+  Stock_change_ = 0;
+}
+
 Diary_system::Trade::Trade(int count_number, double profit,
                            const MyString &employee, const MyString &ISBN,
                            int number) {
@@ -58,15 +64,15 @@ bool Diary_system::Trade::operator<=(const Trade &B) const {
 }
 
 void Diary_system::print_profit(Token_scanner &order) {
-  if (Account_system::rank_now != 7 || order.count_string() > 1) {
+  if (Account_system::rank_now != 7 || order.count_string() > 2) {
     std::cout << "Invalid\n";
     return;
   }
   double profit_of_one = 0, earn = 0, cost = 0;
-  if (order.count_string() == 0) {
+  if (order.count_string() <= 1) {
     Trade *record = Diary_storage.all();
     Trade blank_trade;
-    for (int i = 0; record[i] != blank_trade; ++i) {
+    for (int i = 0; i < count; ++i) {
       profit_of_one = record[i].Profit_;
       if (profit_of_one > 0) {
         earn += profit_of_one;
@@ -76,7 +82,7 @@ void Diary_system::print_profit(Token_scanner &order) {
     }
   } else {
     int count_num = 0;
-    std::string count_string = order.next_token();
+    MyString count_string = order.next_token();
     count_num = std::atoi(&count_string[0]);
     if (count < count_num) {
       std::cout << "Invalid\n";
@@ -87,7 +93,7 @@ void Diary_system::print_profit(Token_scanner &order) {
     Trade first(count - count_num, 0, blank_string, blank_string, 0);
     Trade last(count, 0, blank_string, blank_string, 0);
     Trade *record = Diary_storage.list(0, first, last);
-    for (int i = 0; record[i] != blank_trade; ++i) {
+    for (int i = 0; record[i - 1].Count_number_ != count - 1; ++i) {
       profit_of_one = record[i].Profit_;
       if (profit_of_one > 0) {
         earn += profit_of_one;
@@ -95,6 +101,7 @@ void Diary_system::print_profit(Token_scanner &order) {
         cost += profit_of_one;
       }
     }
+    delete[] record;
   }
   cost = -cost;
   std::cout << "+ " << std::fixed << std::setprecision(2) << earn << " - "

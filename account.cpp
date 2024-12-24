@@ -26,7 +26,6 @@ su [UserID] ([Password])?
 */
 
 #include "account.hpp"
-#include "String.cpp"
 #include "book.hpp"
 #include "tokenscanner.cpp"
 
@@ -83,8 +82,7 @@ void Account_system::Register(Token_scanner &order) {
     std::cout << "Invalid\n";
     return;
   }
-  std::string token;
-  MyString User_ID, User_name, Password;
+  MyString token, User_ID, User_name, Password;
   token = order.next_token();
   User_ID = token;
   token = order.next_token();
@@ -110,8 +108,7 @@ void Account_system::User_add(Token_scanner &order) {
     std::cout << "Invalid\n";
     return;
   }
-  std::string token;
-  MyString User_ID, User_name, Password, blank;
+  MyString token,User_ID, User_name, Password, blank;
   int Privilege = 0;
   token = order.next_token();
   User_ID = token;
@@ -143,8 +140,7 @@ void Account_system::User_add(Token_scanner &order) {
 如果当前帐户权限等级为 {7} 则可以省略 [CurrentPassword]。*/
 //尚未完成：{7}的特殊处理。
 void Account_system::Password_change(Token_scanner &order) {
-  std::string token;
-  MyString User_ID, CurrentPassword, NewPassword, blank;
+  MyString token,User_ID, CurrentPassword, NewPassword, blank;
   if (rank_now == 7 &&
       (order.count_string() == 3 || order.count_string() == 2)) {
     if (order.count_string() == 2) {
@@ -194,8 +190,7 @@ void Account_system::Delete_user(Token_scanner &order) {
     std::cout << "Invalid\n";
     return;
   }
-  std::string token;
-  MyString User_ID, blank;
+  MyString token,User_ID, blank;
   token = order.next_token();
   User_ID = token;
   if (rank_now == 7) {
@@ -218,8 +213,7 @@ void Account_system::Delete_user(Token_scanner &order) {
 如果密码错误则操作失败；
 如果当前帐户权限等级高于登录帐户则可以省略密码。*/
 void Account_system::sign_in(Token_scanner &order) {
-  std::string token;
-  MyString User_ID, Password, blank;
+  MyString token,User_ID, Password, blank;
   if (order.count_string() == 2) {
     token = order.next_token();
     User_ID = token;
@@ -254,8 +248,8 @@ void Account_system::sign_in(Token_scanner &order) {
 如无已登录帐户则操作失败。*/
 void Account_system::log_out() {
   if (!Account_record.empty()) {
-    std::string user_id = Account_record.top().user_id().return_content();
-    if(Book_manage::selection.find(user_id)!=Book_manage::selection.end()){
+    MyString user_id = Account_record.top().user_id();
+    if (Book_manage::selection.find(user_id) != Book_manage::selection.end()) {
       Book_manage::selection.erase(user_id);
     }
     Account_record.pop();
