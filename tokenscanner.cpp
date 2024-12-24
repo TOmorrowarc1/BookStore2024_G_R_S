@@ -1,4 +1,6 @@
 #include "tokenscanner.hpp"
+#include "String.cpp"
+#include "String.hpp"
 
 //读入一个内部含空格，以"\0"结尾的字符串，做如下操作：
 //遍历整个字符串，记录空格之后的第一个字符的位置，标记每一串字符串的起止位置。
@@ -57,11 +59,12 @@ void Token_scanner::operator=(const Token_scanner &target) {
 }
 
 //返回pointer指向的字符并将pointer加1.
-std::string Token_scanner::next_token() {
+MyString Token_scanner::next_token() {
+  MyString result;
   if (pointer >= totalnum) {
-    return "\0";
+    return result;
   }
-  std::string result(&content[space[pointer][0]],&content[space[pointer][1] + 1]);
+  result.change(content,space[pointer][0],space[pointer][1] + 1);
   ++pointer;
   return result;
 }
