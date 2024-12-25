@@ -1,0 +1,3 @@
+/home/tomorrow_arc1/C++learn/BookStore2024_G_R_S/build/CMakeFiles/code.dir
+/home/tomorrow_arc1/C++learn/BookStore2024_G_R_S/build/CMakeFiles/edit_cache.dir
+/home/tomorrow_arc1/C++learn/BookStore2024_G_R_S/build/CMakeFiles/rebuild_cache.dir

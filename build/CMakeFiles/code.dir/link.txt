@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/code.dir/main/ioput.cpp.o -o code 
