@@ -2,16 +2,15 @@
 #ifndef TOKEN_HPP
 #define TOKEN_HPP
 
+#include "String.hpp"
 #include <cstring>
 #include <iostream>
 #include <string>
-
-class MyString;
 class Token_scanner {
 private:
   std::string content;
   //储存每一串字符的起止，不包含空格。
-  int space[8][2]={0};
+  int space[8][2] = {0};
   int pointer;
   int totalnum;
 

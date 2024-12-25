@@ -28,6 +28,7 @@ su [UserID] ([Password])?
 #include "account.hpp"
 #include "book.hpp"
 #include "tokenscanner.cpp"
+#include <stack>
 
 Account_system::Account_info::Account_info(const MyString &user_ID,
                                            const MyString &user_name,
@@ -108,7 +109,7 @@ void Account_system::User_add(Token_scanner &order) {
     std::cout << "Invalid\n";
     return;
   }
-  MyString token,User_ID, User_name, Password, blank;
+  MyString token, User_ID, User_name, Password, blank;
   int Privilege = 0;
   token = order.next_token();
   User_ID = token;
@@ -140,7 +141,7 @@ void Account_system::User_add(Token_scanner &order) {
 如果当前帐户权限等级为 {7} 则可以省略 [CurrentPassword]。*/
 //尚未完成：{7}的特殊处理。
 void Account_system::Password_change(Token_scanner &order) {
-  MyString token,User_ID, CurrentPassword, NewPassword, blank;
+  MyString token, User_ID, CurrentPassword, NewPassword, blank;
   if (rank_now == 7 &&
       (order.count_string() == 3 || order.count_string() == 2)) {
     if (order.count_string() == 2) {
@@ -190,11 +191,33 @@ void Account_system::Delete_user(Token_scanner &order) {
     std::cout << "Invalid\n";
     return;
   }
-  MyString token,User_ID, blank;
+  MyString token, User_ID, blank;
   token = order.next_token();
   User_ID = token;
   if (rank_now == 7) {
     Account_info target(User_ID, blank, blank, 0);
+    //检验目标账户是否已经登录。
+    bool flag = 1;
+    std::stack<Book_manage::Account_record> account_hold;
+    while (!Book_manage::Account_selection.empty()) {
+      Book_manage::Account_record temp = Book_manage::Account_selection.top();
+      if (temp.account_now == target) {
+        flag = 0;
+        break;
+      }
+      Book_manage::Account_selection.pop();
+      account_hold.push(temp);
+    }
+    while (!account_hold.empty()) {
+      Book_manage::Account_record temp = account_hold.top();
+      Book_manage::Account_selection.push(temp);
+      account_hold.pop();
+    }
+    if (flag == 0) {
+      std::cout << "Invalid\n";
+      return;
+    }
+    //正式登出。
     Account_info temp = Account_storage.search(User_ID, target);
     if (temp == target) {
       Account_storage.erase(Account_storage.create(User_ID, temp));
@@ -213,7 +236,7 @@ void Account_system::Delete_user(Token_scanner &order) {
 如果密码错误则操作失败；
 如果当前帐户权限等级高于登录帐户则可以省略密码。*/
 void Account_system::sign_in(Token_scanner &order) {
-  MyString token,User_ID, Password, blank;
+  MyString token, User_ID, Password, blank;
   if (order.count_string() == 2) {
     token = order.next_token();
     User_ID = token;
@@ -229,12 +252,16 @@ void Account_system::sign_in(Token_scanner &order) {
   Account_info target(User_ID, blank, blank, 0);
   Account_info temp = Account_storage.search(User_ID, target);
   if (temp.User_rank_ < rank_now) {
-    Account_record.push(temp);
+    Book_manage::Account_record new_user;
+    new_user.account_now = temp;
+    Book_manage::Account_selection.push(new_user);
     rank_now = temp.User_rank_;
     //考虑如下问题：权限高但是输入密码？
   } else {
     if (temp.Password_ == Password) {
-      Account_record.push(temp);
+      Book_manage::Account_record new_user;
+      new_user.account_now = temp;
+      Book_manage::Account_selection.push(new_user);
       rank_now = temp.User_rank_;
     } else {
       std::cout << "Invalid\n";
@@ -247,16 +274,12 @@ void Account_system::sign_in(Token_scanner &order) {
 撤销最后一次成功执行的 su 指令效果。
 如无已登录帐户则操作失败。*/
 void Account_system::log_out() {
-  if (!Account_record.empty()) {
-    MyString user_id = Account_record.top().user_id();
-    if (Book_manage::selection.find(user_id) != Book_manage::selection.end()) {
-      Book_manage::selection.erase(user_id);
-    }
-    Account_record.pop();
-    if (Account_record.empty()) {
+  if (!Book_manage::Account_selection.empty()) {
+    Book_manage::Account_selection.pop();
+    if (Book_manage::Account_selection.empty()) {
       rank_now = 0;
     } else {
-      rank_now = Account_record.top().User_rank_;
+      rank_now = Book_manage::Account_selection.top().account_now.User_rank_;
     }
   } else {
     std::cout << "Invalid\n";

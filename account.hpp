@@ -24,14 +24,13 @@ logout
 register [UserID] [Password] [Username]
 先访问，返回值若相同再压栈并改变全局变量。
 */
+#pragma once
 #ifndef A_C_C_O_U_N_T
 #define A_C_C_O_U_N_T
 
 #include<iostream>
-#include<stack>
 #include<cstring>
 #include"storage.hpp"
-#include"String.hpp"
 #include"tokenscanner.hpp"
 
 namespace Account_system{
@@ -64,8 +63,6 @@ namespace Account_system{
     };
 
     Memory<MyString, Account_info> Account_storage("account_key","account_value",1000);
-    
-    std::stack<Account_info> Account_record;
     
     int rank_now = 0;
 
