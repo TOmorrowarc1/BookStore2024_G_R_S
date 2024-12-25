@@ -1,11 +1,10 @@
+#pragma once
 #ifndef BOOKMANAGE_HPP
 #define BOOKMANAGE_HPP
 
-#include "String.hpp"
+#include "account.hpp"
 #include "storage.hpp"
-#include "tokenscanner.hpp"
-#include <map>
-
+#include <stack>
 
 /*在书籍管理系统中，本程序实现如下功能：
 1.实现Book类，储存一本书籍相关信息：ISBN，书名，作者名，关键词，库存书籍数量，单价。
@@ -50,15 +49,18 @@ public:
   friend void import(Token_scanner &);
 };
 
-
-std::map<MyString, Book> selection;
+struct Account_record {
+  Account_system::Account_info account_now;
+  Book selection_now;
+};
+std::stack<Account_record> Account_selection;
 
 Memory<MyString, Book> ISBN_book("ISBN_file", "Book_file", 1000);
 Memory<MyString, Book> bookname_book("bookname_file", "bookname_ISBN_file",
-                                         1000);
+                                     1000);
 Memory<MyString, Book> author_book("author_file", "author_ISBN_file", 1000);
 Memory<MyString, Book> keywords_book("keywords_file", "keywords_ISBN_file",
-                                         1000);
+                                     1000);
 
 void select(Token_scanner &);
 void modify(Token_scanner &);

@@ -1,9 +1,5 @@
 #include "book.hpp"
-#include "String.hpp"
-#include "account.cpp"
-#include "account.hpp"
 #include "diary.cpp"
-#include "diary.hpp"
 #include <iomanip>
 #include <set>
 #include <stdlib.h>
@@ -69,16 +65,18 @@ void Book_manage::select(Token_scanner &order) {
     return;
   }
   MyString ISBN = order.next_token();
-  MyString User_ID = Account_system::Account_record.top().user_id();
   Book blank, target;
   target = ISBN_book.search(ISBN, blank);
+  Account_record temp = Account_selection.top();
   if (target.ISBN_ != ISBN) {
     blank.ISBN_ = ISBN;
     ISBN_book.insert(ISBN_book.create(ISBN, blank));
-    selection[User_ID] = blank;
+    temp.selection_now = blank;
   } else {
-    selection[User_ID] = target;
+    temp.selection_now = target;
   }
+  Account_selection.pop();
+  Account_selection.push(temp);
   return;
 }
 
@@ -99,7 +97,8 @@ void Book_manage::modify(Token_scanner &order) {
     return;
   }
   //读取对应信息方法：锁定=.
-  for (int i = 0; i < order.count_string(); ++i) {
+  int total_string = order.count_string();
+  for (int i = 0; i < total_string; ++i) {
     MyString token = order.next_token();
     int equal = 1, end = 0;
     for (int i = 1; token[i - 1] != '='; ++i) {
@@ -155,13 +154,13 @@ void Book_manage::modify(Token_scanner &order) {
     }
   }
   //以上为输入部分，接下来修改对应文件。
-  MyString User_ID = Account_system::Account_record.top().user_id();
   //找出原来书籍信息。
-  if (selection.find(User_ID) == selection.end()) {
+  Account_record temp = Account_selection.top();
+  Book origin = temp.selection_now;
+  if (origin == blank) {
     std::cout << "Invalid\n";
     return;
   }
-  Book origin = selection[User_ID];
   Book now(origin);
   //根据输入内容修改本书信息。
   if (change[1]) {
@@ -215,7 +214,20 @@ void Book_manage::modify(Token_scanner &order) {
   }
   delete[] catcher_1;
   delete[] catcher_2;
-  selection[User_ID] = now;
+  //检查栈中是否有用户选择相同书籍并更改。
+  std::stack<Account_record> account_holder;
+  while (!Account_selection.empty()) {
+    Account_record check = Account_selection.top();
+    if (check.selection_now == origin) {
+      check.selection_now = now;
+    }
+    account_holder.push(check);
+    Account_selection.pop();
+  }
+  while (!account_holder.empty()) {
+    Account_selection.push(account_holder.top());
+    account_holder.pop();
+  }
   return;
 }
 
@@ -359,10 +371,19 @@ void Book_manage::sell(Token_scanner &order) {
     keywords_book.insert(keywords_book.create(catcher[i], target));
   }
   delete[] catcher;
-  MyString User_ID = Account_system::Account_record.top().user_id();
-  if (selection.find(User_ID) != selection.end() &&
-      selection[User_ID] == target) {
-    selection[User_ID] = target;
+  //检测栈中是否存在相同书籍并更改。
+  std::stack<Account_record> account_holder;
+  while (!Account_selection.empty()) {
+    Account_record check = Account_selection.top();
+    if (check.selection_now == target) {
+      check.selection_now = target;
+    }
+    account_holder.push(check);
+    Account_selection.pop();
+  }
+  while (!account_holder.empty()) {
+    Account_selection.push(account_holder.top());
+    account_holder.pop();
   }
   //日志系统：储存增量。
   Diary_system::Trade new_trade(Diary_system::count, num * target.price,
@@ -378,13 +399,14 @@ void Book_manage::import(Token_scanner &order) {
     std::cout << "Invalid\n";
     return;
   }
-  MyString User_ID = Account_system::Account_record.top().user_id();
+  Book blank;
+  Account_record temp = Account_selection.top();
+  Book target = temp.selection_now;
   //找出原来书籍信息。
-  if (selection.find(User_ID) == selection.end()) {
+  if (target == blank) {
     std::cout << "Invalid\n";
     return;
   }
-  Book target = selection[User_ID];
   MyString quantity, totalcost;
   int num_quantity = 0;
   double cost = 0;
@@ -426,7 +448,20 @@ void Book_manage::import(Token_scanner &order) {
     keywords_book.insert(keywords_book.create(catcher[i], target));
   }
   delete[] catcher;
-  selection[User_ID] = target;
+  //检测栈中是否存在相同书籍并更改。
+  std::stack<Account_record> account_holder;
+  while (!Account_selection.empty()) {
+    Account_record check = Account_selection.top();
+    if (check.selection_now == target) {
+      check.selection_now = target;
+    }
+    account_holder.push(check);
+    Account_selection.pop();
+  }
+  while (!account_holder.empty()) {
+    Account_selection.push(account_holder.top());
+    account_holder.pop();
+  }
   //日志系统：储存增量。
   Diary_system::Trade new_trade(Diary_system::count, -cost, blank_string,
                                 target.ISBN_, num_quantity);

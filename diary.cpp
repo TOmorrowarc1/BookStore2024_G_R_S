@@ -1,7 +1,6 @@
 #include "diary.hpp"
-#include "String.hpp"
-#include "account.hpp"
-#include "tokenscanner.hpp"
+#include "account.cpp"
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <stdlib.h>
@@ -69,10 +68,9 @@ void Diary_system::print_profit(Token_scanner &order) {
     return;
   }
   double profit_of_one = 0, earn = 0, cost = 0;
-  if (order.count_string() <= 1) {
+  if (order.count_string() == 0) {
     Trade *record = Diary_storage.all();
-    Trade blank_trade;
-    for (int i = 0; i < count; ++i) {
+    for (int i = 0; i < count - 1; ++i) {
       profit_of_one = record[i].Profit_;
       if (profit_of_one > 0) {
         earn += profit_of_one;
@@ -83,13 +81,18 @@ void Diary_system::print_profit(Token_scanner &order) {
   } else {
     int count_num = 0;
     MyString count_string = order.next_token();
+    for (int i = 0; count_string[i] != 0; ++i) {
+      if (count_string[i] < '0' || count_string[i] > '9') {
+        std::cout << "Invalid\n";
+        return;
+      }
+    }
     count_num = std::atoi(&count_string[0]);
     if (count < count_num) {
       std::cout << "Invalid\n";
       return;
     }
     MyString blank_string;
-    Trade blank_trade;
     Trade first(count - count_num, 0, blank_string, blank_string, 0);
     Trade last(count, 0, blank_string, blank_string, 0);
     Trade *record = Diary_storage.list(0, first, last);
@@ -103,12 +106,39 @@ void Diary_system::print_profit(Token_scanner &order) {
     }
     delete[] record;
   }
-  cost = -cost;
+  if (cost != 0) {
+    cost = -cost;
+  }
   std::cout << "+ " << std::fixed << std::setprecision(2) << earn << " - "
             << std::fixed << std::setprecision(2) << cost << '\n';
   return;
 }
-
+//未完待续，一会再说。
 void Diary_system::finace_report(Token_scanner &);
 void Diary_system::employee_report(Token_scanner &);
 void Diary_system::system_diary(Token_scanner &);
+
+void Diary_system::initialise() {
+  std::fstream file;
+  file.open("record_trade_count", std::fstream::in | std::fstream::out);
+  if (!file) {
+    file.close();
+    file.open("record_trade_count", std::fstream::out);
+    file.close();
+    return;
+  }
+  file.read(reinterpret_cast<char *>(&Diary_system::count), sizeof(int));
+  file.close();
+  return;
+}
+
+void Diary_system::remember() {
+  std::fstream file;
+  file.open("record_trade_count", std::fstream::in | std::fstream::out);
+  if (!file) {
+    std::cout << "cannot open the file.\n";
+  }
+  file.write(reinterpret_cast<char *>(&Diary_system::count), sizeof(int));
+  file.close();
+  return;
+}

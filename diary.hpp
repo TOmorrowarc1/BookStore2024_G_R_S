@@ -44,15 +44,17 @@ public:
   friend void system_diary(Token_scanner &);
 };
 
-int count = 0;
+int count = 1;
 
 Memory<int, Trade> Diary_storage("Diary_0", "Diary_file", 1000);
 Memory<MyString, Trade> Employee_diary("employee_key", "employee_value", 1000);
 
+void initialise();
 void print_profit(Token_scanner &);
 void finace_report(Token_scanner &);
 void employee_report(Token_scanner &);
 void system_diary(Token_scanner &);
+void remember();
 
 } // namespace Diary_system
 
