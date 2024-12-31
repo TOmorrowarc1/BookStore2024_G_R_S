@@ -8,9 +8,11 @@ int main() {
   MyString flag_1;
   Account_system::start();
   Diary_system::initialise();
+  int counter = 0;
   while (std::cin.fail() == false) {
     std::getline(std::cin, order, '\n');
     Order = order;
+    ++counter;
     if (Order.count_string() == 0) {
       continue;
     } else {
@@ -35,8 +37,17 @@ int main() {
         } else {
           MyString judge = Order.next_token();
           MyString finance("finance");
+          MyString finance_report("finance_report");
+          MyString employee_report("employee_report");
+          MyString log("log");
           if (judge == finance) {
             Diary_system::print_profit(Order);
+          } else if (judge == finance_report) {
+            Diary_system::finace_report(Order);
+          } else if (judge == employee_report) {
+            Diary_system::employee_report(Order);
+          } else if (judge == log) {
+            Diary_system::system_diary(Order);
           } else {
             Order.move_back();
             Book_manage::show(Order);

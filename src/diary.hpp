@@ -48,6 +48,7 @@ int count = 1;
 
 Memory<int, Trade> Diary_storage("Diary_0", "Diary_file", 1000);
 Memory<MyString, Trade> Employee_diary("employee_key", "employee_value", 1000);
+Memory<int,MyString> System_record("log_number","log_order",1000);
 
 void initialise();
 void print_profit(Token_scanner &);

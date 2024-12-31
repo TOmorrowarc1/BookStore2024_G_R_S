@@ -1,5 +1,7 @@
 #include "diary.hpp"
+#include "String.hpp"
 #include "account.cpp"
+#include "account.hpp"
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -113,10 +115,43 @@ void Diary_system::print_profit(Token_scanner &order) {
             << std::fixed << std::setprecision(2) << cost << '\n';
   return;
 }
-//未完待续，一会再说。
-void Diary_system::finace_report(Token_scanner &);
-void Diary_system::employee_report(Token_scanner &);
-void Diary_system::system_diary(Token_scanner &);
+
+void Diary_system::finace_report(Token_scanner &order) {
+  Trade *all_trades = Diary_storage.all();
+  for (int i = 0; all_trades[i].Count_number_ != 0; ++i) {
+    std::cout << all_trades[i].Count_number_ << ' ' << all_trades[i].Employee_
+              << ' ' << all_trades[i].Book_ID_ << ' '
+              << all_trades[i].Stock_change_ << ' ' << std::fixed
+              << std::setprecision(2) << all_trades[i].Profit_ << '\n';
+  }
+  return;
+}
+
+void Diary_system::employee_report(Token_scanner &order) {
+  Trade *all_trades = Employee_diary.all();
+  for (int i = 0; all_trades[i].Count_number_ != 0; ++i) {
+    Account_system::Account_info blank;
+    blank =
+        Account_system::Account_storage.search(all_trades[i].Employee_, blank);
+    if (blank.rank() == 3) {
+      std::cout << all_trades[i].Employee_ << ' ' << all_trades[i].Book_ID_
+                << ' ' << all_trades[i].Stock_change_ << ' ' << std::fixed
+                << std::setprecision(2) << all_trades[i].Profit_ << '\n';
+    }
+  }
+  return;
+}
+
+void Diary_system::system_diary(Token_scanner &order) {
+  MyString *all_orders = System_record.all();
+  MyString blank_string;
+  int counter = 0;
+  for (int i = 0; all_orders[i] != blank_string; ++i) {
+    ++counter;
+    std::cout << counter << ' ' << all_orders[i] << '\n';
+  }
+  return;
+}
 
 void Diary_system::initialise() {
   std::fstream file;

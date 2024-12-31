@@ -25,6 +25,7 @@ register [UserID] [Password] [Username]
 先访问，返回值若相同再压栈并改变全局变量。
 */
 #pragma once
+#include "String.hpp"
 #ifndef A_C_C_O_U_N_T
 #define A_C_C_O_U_N_T
 
@@ -53,6 +54,7 @@ namespace Account_system{
         bool operator>=(const Account_info&)const;
         bool operator<=(const Account_info&)const;
         MyString user_id();
+        int rank();
         friend void start();
         friend void Register(Token_scanner&);
         friend void User_add(Token_scanner&);
