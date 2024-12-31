@@ -67,6 +67,7 @@ bool Account_system::Account_info::operator<=(const Account_info &B) const {
   return User_ID_ <= B.User_ID_;
 }
 MyString Account_system::Account_info::user_id() { return User_ID_; }
+MyString Account_system::Account_info::user_name() { return User_name_; }
 int Account_system::Account_info::rank() { return User_rank_; }
 
 void Account_system::start() {

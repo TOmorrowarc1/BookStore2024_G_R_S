@@ -388,11 +388,11 @@ void Book_manage::sell(Token_scanner &order) {
   }
   //日志系统：储存增量。
   Diary_system::Trade new_trade(Diary_system::count, num * target.price,
-                                Account_selection.top().account_now.user_id(), target.ISBN_, -num);
+                                Account_selection.top().account_now.user_name(), target.ISBN_, -num);
   Diary_system::Diary_storage.insert(
       Diary_system::Diary_storage.create(0, new_trade));
   Diary_system::Employee_diary.insert(
-    Diary_system::Employee_diary.create(Account_selection.top().account_now.user_id(), new_trade));
+    Diary_system::Employee_diary.create(Account_selection.top().account_now.user_name(), new_trade));
   ++Diary_system::count;
   return;
 }
@@ -467,12 +467,12 @@ void Book_manage::import(Token_scanner &order) {
   }
   //日志系统：储存增量。
   Diary_system::Trade new_trade(Diary_system::count, -cost,
-                                Account_selection.top().account_now.user_id(),
+                                Account_selection.top().account_now.user_name(),
                                 target.ISBN_, num_quantity);
   Diary_system::Diary_storage.insert(
       Diary_system::Diary_storage.create(0, new_trade));
   Diary_system::Employee_diary.insert(
-    Diary_system::Employee_diary.create(Account_selection.top().account_now.user_id(), new_trade));
+    Diary_system::Employee_diary.create(Account_selection.top().account_now.user_name(), new_trade));
   ++Diary_system::count;
   return;
 }

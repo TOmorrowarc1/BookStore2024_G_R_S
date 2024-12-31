@@ -143,12 +143,13 @@ void Diary_system::employee_report(Token_scanner &order) {
 }
 
 void Diary_system::system_diary(Token_scanner &order) {
-  MyString *all_orders = System_record.all();
+  Operation *all_orders = System_record.all();
   MyString blank_string;
   int counter = 0;
-  for (int i = 0; all_orders[i] != blank_string; ++i) {
+  for (int i = 0; all_orders[i].user_name != blank_string; ++i) {
     ++counter;
-    std::cout << counter << ' ' << all_orders[i] << '\n';
+    std::cout << counter << ' ' << all_orders[i].user_name << ' '
+              << all_orders[i].order_record << '\n';
   }
   return;
 }

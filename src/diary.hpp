@@ -11,7 +11,7 @@
 2.记录储存库：
 2.1 仅按照时间记录：0-Trade。
 2.2 员工工作情况：employee-Trade。
-2.3系统日志：救命，什么玩应。
+2.3系统日志。
 3.实现如下函数：
 3.1查询最近n笔交易收支情况。
 3.1.5生成所有交易财务报表。
@@ -19,6 +19,19 @@
 3.3生成系统日志。（？！？！？）*/
 
 namespace Diary_system {
+struct Operation {
+  int counter = 0;
+  MyString user_name;
+  MyString order_record;
+  Operation() = default;
+  bool operator==(const Operation &b) const { return counter == b.counter; }
+  bool operator!=(const Operation &b) const { return counter != b.counter; }
+  bool operator>(const Operation &b) const { return counter > b.counter; }
+  bool operator>=(const Operation &b) const { return counter >= b.counter; }
+  bool operator<(const Operation &b) const { return counter < b.counter; }
+  bool operator<=(const Operation &b) const { return counter <= b.counter; }
+};
+
 class Trade {
 private:
   int Count_number_;
@@ -48,7 +61,7 @@ int count = 1;
 
 Memory<int, Trade> Diary_storage("Diary_0", "Diary_file", 1000);
 Memory<MyString, Trade> Employee_diary("employee_key", "employee_value", 1000);
-Memory<int,MyString> System_record("log_number","log_order",1000);
+Memory<int, Operation> System_record("log_number", "log_order", 1000);
 
 void initialise();
 void print_profit(Token_scanner &);

@@ -10,7 +10,7 @@
 //同时重载输入输出运算符。
 class MyString {
 private:
-  char content[65] = {0};
+  char content[150] = {0};
 
 public:
   MyString() = default;
